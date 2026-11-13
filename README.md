@@ -7,7 +7,7 @@ Site e landing pages do Ágape Multimidia.
 ```
 black/            LP Black November 2026 → agapemultimidia.com.br/black/
   index.html      página única (HTML + CSS + JS, sem build)
-  assets/         logo, favicon e fontes (Archivo e Roboto, locais)
+  assets/         logo, favicon, foto do topo, imagem de compartilhamento e fontes (Archivo e Roboto, locais)
 ```
 
 A estrutura espelha o endereço final: o conteúdo de `black/` precisa ficar em `/black/` na raiz do domínio.
@@ -30,5 +30,9 @@ python3 -m http.server 8765
 
 ## Pendências da LP
 
-- Vídeo de vendas, depoimentos e foto do Fábio: blocos retirados da primeira versão; entram quando houver material.
-- Imagem de compartilhamento (og:image) e pixels de rastreamento (Meta, Google), se o cliente usar.
+- Definir o que a página `/black` mostra depois do fim da oferta (30/11/2026).
+- Pixels de rastreamento (Meta, Google) e link de política de privacidade: não incluídos por decisão; entram juntos, se o cliente pedir.
+
+## Documentação
+
+`CLAUDE.md` (contexto e regras), `DESIGN.md` (identidade e tokens), `SECURITY.md` (dados e acessos), `GUIDELINES.md` (branches e publicação).
