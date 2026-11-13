@@ -58,8 +58,12 @@ a{text-decoration:none}
 .faq p{margin:0;padding:0 20px 20px;font-size:17px;line-height:1.55;color:#B8B8B8}
 .lnk{color:#B8B8B8}
 .lnk:hover{color:#FFFFFF}
+.lnk:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.flk{display:inline-flex;align-items:center;min-height:44px;padding:0 8px}
+.gtx{text-align:justify;hyphens:auto}
 .stk{display:none}
 @media (max-width:700px){
+.gtx{text-align:left;hyphens:manual}
 .hd-cta{display:none}
 .stk{display:block;position:sticky;bottom:0;z-index:30;background:#0A0A0A;border-top:1px solid #2A2A2A;padding:10px 16px;box-sizing:border-box}
 }
@@ -242,7 +246,7 @@ html{scroll-behavior:smooth}
 <text x="66" y="100" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="800" font-size="13" letter-spacing="2" fill="#FFFFFF">DIAS</text>
 <text x="66" y="38" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="800" font-size="10" letter-spacing="2" fill="#FFFFFF">GARANTIA</text>
 </svg>
-<p style="margin:0;flex:1 1 320px;max-width:640px;min-width:0;font-size:17px;line-height:1.55;color:#B8B8B8;text-align:justify;hyphens:auto"><b style="color:#FFFFFF">Garantia por 7 dias ou devolução do seu dinheiro.</b> Seu aprendizado garantido: assista às aulas, acesse os bônus e, se por qualquer motivo não ficar satisfeito, peça o reembolso em até 7 dias entrando em contato com o nosso suporte. Você recebe de volta tudo o que pagou.</p>
+<p class="gtx" style="margin:0;flex:1 1 320px;max-width:640px;min-width:0;font-size:17px;line-height:1.55;color:#B8B8B8"><b style="color:#FFFFFF">Garantia por 7 dias ou devolução do seu dinheiro.</b> Seu aprendizado garantido: assista às aulas, acesse os bônus e, se por qualquer motivo não ficar satisfeito, peça o reembolso em até 7 dias entrando em contato com o nosso suporte. Você recebe de volta tudo o que pagou.</p>
 </div>
 </div>
 </section>
@@ -275,22 +279,25 @@ html{scroll-behavior:smooth}
 
 </main>
 
+<footer>
 <div style="width:100%;max-width:1200px;margin:0 auto;padding:0 24px 28px;box-sizing:border-box">
 <p style="margin:0;padding:20px;border:1px solid #2A2A2A;border-radius:14px;font-size:14px;line-height:1.6;color:#B8B8B8;box-sizing:border-box">*Preço promocional válido apenas de 01 a 30 de novembro de 2026, em compras feitas por esta página. *O preço normal continua ativo na página própria do curso; a compra feita por lá não garante o desconto desta promoção. *Acesso ANUAL ao curso (assinatura anual): o valor promocional (12x de R$ 8,26 ou R$ 79,90 à vista) dá direito ao acesso a todas as aulas e bônus por 12 meses a partir da data da compra.</p>
 </div>
 
 <div style="width:100%;border-top:1px solid #262A30;background:#15171A">
-<div style="max-width:1200px;margin:0 auto;padding:20px 24px;display:flex;flex-wrap:wrap;gap:12px 28px;align-items:center;justify-content:space-between;font-size:14px;color:#B8B8B8;box-sizing:border-box">
-<span>© 2026 Ágape Multimidia · Desenvolvido por <a class="lnk" href="https://instagram.com/andrescultori" target="_blank" rel="noopener">André Scultori</a></span>
-<div style="display:flex;flex-wrap:wrap;gap:8px 24px">
-<a class="lnk" href="https://www.youtube.com/@agapemultimidia">YouTube</a>
-<a class="lnk" href="https://www.instagram.com/agapemultimidia/">Instagram</a>
-<a class="lnk" href="https://www.facebook.com/agapemultimidia/">Facebook</a>
+<div style="max-width:1200px;margin:0 auto;padding:8px 24px;display:flex;flex-wrap:wrap;gap:0 28px;align-items:center;justify-content:space-between;font-size:14px;color:#B8B8B8;box-sizing:border-box">
+<span style="display:inline-flex;align-items:center;min-height:44px;flex-wrap:wrap;column-gap:.3em">© 2026 Ágape Multimidia · Desenvolvido por <a class="lnk" href="https://instagram.com/andrescultori" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;min-height:44px">André Scultori</a></span>
+<div style="display:flex;flex-wrap:wrap;gap:0 8px;margin:0 -8px">
+<a class="lnk flk" href="https://www.youtube.com/@agapemultimidia">YouTube</a>
+<a class="lnk flk" href="https://www.instagram.com/agapemultimidia/">Instagram</a>
+<a class="lnk flk" href="https://www.facebook.com/agapemultimidia/">Facebook</a>
 </div>
 </div>
 </div>
 
-<div class="stk"><a class="btn" href="https://pay.kiwify.com.br/OHuG7Jx" rel="noopener" style="width:100%">Quero por 12x R$ 8,26</a></div>
+</footer>
+
+<div class="stk" role="region" aria-label="Comprar com desconto"><a class="btn" href="https://pay.kiwify.com.br/OHuG7Jx" rel="noopener" style="width:100%">Quero por 12x R$ 8,26</a></div>
 
 </div>
 <script>
@@ -309,6 +316,8 @@ html{scroll-behavior:smooth}
       el.style.transitionDelay = '';
     }, 2200);
   }
+  // rede de segurança: se o observador falhar, revela pelo scroll; se o script quebrar, mostra tudo
+  window.addEventListener('error', function(){ document.documentElement.classList.remove('js'); });
   if (!('IntersectionObserver' in window)) { els.forEach(show); return; }
   // .tw usa clip-path (o IntersectionObserver ignora área recortada), então observamos o pai
   var map = new Map();
@@ -323,6 +332,16 @@ html{scroll-behavior:smooth}
     });
   }, { threshold: 0.15, rootMargin: '0px 0px -6% 0px' });
   map.forEach(function(v, t){ io.observe(t); });
+  var tick = false;
+  function sweep(){
+    tick = false;
+    map.forEach(function(v, t){
+      if (t.getBoundingClientRect().top < window.innerHeight * 0.94) { v.forEach(show); io.unobserve(t); map.delete(t); }
+    });
+  }
+  function ask(){ if (!tick) { tick = true; requestAnimationFrame(sweep); } }
+  window.addEventListener('scroll', ask, { passive: true });
+  window.addEventListener('load', ask);
 })();
 </script>
 </body>
