@@ -39,7 +39,24 @@ There is no install, build or test command.
 - Read only what the task needs; filter command output to errors.
 
 ## Skills installed
-None yet. TODO(André): pick with skill-installer (design/frontend).
+Project scope (travels with the repo, in `.claude/skills/`):
+
+| Skill | Source | Use |
+|---|---|---|
+| impeccable | https://github.com/pbakaus/impeccable (Apache-2.0) | Design audit, polish, critique on the LP. Run `/impeccable init` once to set the design context. First run downloads its engine binary (checksum-verified). |
+
+Already available (no install):
+
+| Skill | Use |
+|---|---|
+| `/security-review` (built in) | Before each merge |
+| token-budget | Model routing and context hygiene |
+| lgpd-web | Before adding Meta/Google pixels: cookie notice, PT-BR privacy notice |
+| design-critique + accessibility-review | Gate before delivery |
+| seo-ai-visibility | SEO pass before publishing |
+| webapp-testing | Playwright check at mobile widths |
+
+Deliberately not installed: style skills (hallmark/taste-skill), security-audit, supabase, vercel, claude-seo.
 
 ## Docs
 DESIGN.md · SECURITY.md · GUIDELINES.md
