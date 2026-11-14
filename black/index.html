@@ -32,14 +32,13 @@
 
 body{margin:0;background:#0A0A0A;color:#FFFFFF}
 a{text-decoration:none}
-.btn{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:0 28px;border-radius:10px;background:var(--ac);color:#0A0A0A;font-weight:700;font-size:19px;text-align:center;box-sizing:border-box;transition:transform .2s ease, box-shadow .2s ease}
-.btn:hover{transform:scale(1.08);box-shadow:0 12px 32px rgba(255,210,31,.35)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:0 28px;border-radius:10px;background:var(--ac);color:#0A0A0A;font-weight:700;font-size:19px;text-align:center;box-sizing:border-box;transition:box-shadow .2s ease}
+.btn:hover{box-shadow:0 12px 32px rgba(255,210,31,.35)}
 .btn:focus-visible{outline:3px solid #FFFFFF;outline-offset:3px}
 .btn-dk{background:#0A0A0A;color:var(--ac)}
 .btn-dk:hover{box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.btn-dk:focus-visible{outline-color:#0A0A0A}
 .btn-sm{min-height:44px;padding:0 18px;font-size:16px}
-.xp{transition:transform .2s ease, box-shadow .2s ease}
-.xp:hover{transform:scale(1.05);box-shadow:0 12px 32px rgba(255,210,31,.2)}
 .card{background:#1C1F23;border:1px solid #2C3036;border-radius:20px;box-sizing:border-box}
 .band{width:100%;margin-top:clamp(40px,6vw,80px);padding-bottom:clamp(40px,6vw,80px);background:#15171A;border-top:1px solid #262A30;border-bottom:1px solid #262A30;box-sizing:border-box}
 .eyebrow{font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--ac)}
@@ -60,33 +59,32 @@ a{text-decoration:none}
 .lnk:hover{color:#FFFFFF}
 .lnk:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 .flk{display:inline-flex;align-items:center;min-height:44px;padding:0 8px}
-.gtx{text-align:justify;hyphens:auto}
 .stk{display:none}
+.strip{background:#FFD21F;color:#0A0A0A;text-align:center;font-weight:700;font-size:15px;letter-spacing:0.04em;padding:8px 16px;box-sizing:border-box;text-wrap:balance}
 @media (max-width:700px){
-.gtx{text-align:left;hyphens:manual}
+.strip{font-size:13px;letter-spacing:0.02em;padding:6px 12px}
 .hd-cta{display:none}
 .stk{display:block;position:sticky;bottom:0;z-index:30;background:#0A0A0A;border-top:1px solid #2A2A2A;padding:10px 16px;box-sizing:border-box}
 .js .stk{transform:translateY(110%);visibility:hidden;transition:transform .25s ease,visibility 0s .25s}
 .js .stk.on{transform:none;visibility:visible;transition:transform .25s ease}
 }
 
-.js .xp.in:hover,.xp:hover{transform:scale(1.05)}
-
 
 /* ---- animações (ativadas por JS: classe .js no <html>) ---- */
-.js .rv,.js .rv2,.js .rv3{opacity:0;transform:translateY(32px);transition:opacity .7s ease,transform .7s ease}
-.js .rv2{transition-delay:.1s}.js .rv3{transition-delay:.2s}
-.js .rvL{opacity:0;transform:translateX(-56px);transition:opacity .7s ease,transform .7s ease}
-.js .rvR{opacity:0;transform:translateX(56px);transition:opacity .7s ease,transform .7s ease}
-.js .rvZ,.js .rvZ2,.js .rvZ3{opacity:0;transform:scale(.9);transition:opacity .6s ease,transform .6s ease}
-.js .rvZ2{transition-delay:.1s}.js .rvZ3{transition-delay:.2s}
-.js .spn{opacity:0;transform:rotate(-140deg) scale(.5);transition:opacity .8s ease-out,transform .9s ease-out}
+/* movimento curto e suave; o topo da página (hero) aparece sem animação */
+.js .rv,.js .rv2,.js .rv3{opacity:0;transform:translateY(14px);transition:opacity .5s cubic-bezier(.22,1,.36,1),transform .5s cubic-bezier(.22,1,.36,1)}
+.js .rv2{transition-delay:.06s}.js .rv3{transition-delay:.12s}
+.js .rvL{opacity:0;transform:translateX(-16px);transition:opacity .5s cubic-bezier(.22,1,.36,1),transform .5s cubic-bezier(.22,1,.36,1)}
+.js .rvR{opacity:0;transform:translateX(16px);transition:opacity .5s cubic-bezier(.22,1,.36,1),transform .5s cubic-bezier(.22,1,.36,1)}
+.js .rvZ,.js .rvZ2,.js .rvZ3{opacity:0;transform:scale(.97);transition:opacity .5s cubic-bezier(.22,1,.36,1),transform .5s cubic-bezier(.22,1,.36,1)}
+.js .rvZ2{transition-delay:.06s}.js .rvZ3{transition-delay:.12s}
+.js .spn{opacity:0;transform:scale(.9);transition:opacity .5s ease-out,transform .5s cubic-bezier(.22,1,.36,1)}
 .js .in.rv,.js .in.rv2,.js .in.rv3,.js .in.rvL,.js .in.rvR,.js .in.rvZ,.js .in.rvZ2,.js .in.rvZ3,.js .in.spn{opacity:1;transform:none}
-.js .tw{clip-path:inset(0 100% 0 0)}
-.js .tw.in{clip-path:inset(0 0 0 0);transition:clip-path .9s steps(32,end)}
+.js .tw{opacity:0}
+.js .tw.in{opacity:1;transition:opacity .4s ease-out}
 @media (prefers-reduced-motion: reduce){
 .js .rv,.js .rv2,.js .rv3,.js .rvL,.js .rvR,.js .rvZ,.js .rvZ2,.js .rvZ3,.js .spn,.js .tw{opacity:1 !important;transform:none !important;clip-path:none !important;transition:none !important}
-.btn,.xp{transition:none}.btn:hover,.xp:hover{transform:none}
+.btn{transition:none}
 .js .stk,.js .stk.on{transition:none}
 }
 html{scroll-behavior:smooth}
@@ -97,8 +95,8 @@ html{scroll-behavior:smooth}
 <body>
 <div style="background:#0A0A0A;color:#FFFFFF;font-family:'Roboto',system-ui,sans-serif;display:flex;flex-direction:column;box-sizing:border-box;overflow-x:clip">
 
+<div class="strip">BLACK NOVEMBER · ATÉ 73% OFF NO PRO 2.0 · SÓ ATÉ 30/11</div>
 <header style="position:sticky;top:0;z-index:20;background:#0A0A0A">
-<div style="background:#FFD21F;color:#0A0A0A;text-align:center;font-weight:700;font-size:15px;letter-spacing:0.04em;padding:8px 16px;box-sizing:border-box">BLACK NOVEMBER · ATÉ 73% OFF NO PRO 2.0 · SÓ ATÉ 30/11</div>
 <div style="border-bottom:1px solid #2A2A2A">
 <div style="max-width:1200px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-sizing:border-box">
 <a href="https://agapemultimidia.com.br/" aria-label="Ágape Multimidia – início" style="display:flex;align-items:center;gap:12px;color:#FFFFFF">
@@ -113,7 +111,7 @@ html{scroll-behavior:smooth}
 <main style="display:flex;flex-direction:column">
 
 <section aria-labelledby="t-hero" style="width:100%;max-width:1200px;margin:0 auto;padding:clamp(32px,5vw,72px) 24px 0;box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:center;gap:clamp(28px,4vw,56px)">
-<div class="rvL" style="flex:1 1 460px;min-width:0;display:flex;flex-direction:column;gap:22px">
+<div style="flex:1 1 460px;min-width:0;display:flex;flex-direction:column;gap:22px">
 <span class="eyebrow">Black November · o mês todo</span>
 <h1 id="t-hero" style="margin:0;font-family:'Archivo',sans-serif;font-weight:800;font-size:clamp(2.25rem,5.2vw,4rem);line-height:1.02;letter-spacing:-0.015em;overflow-wrap:anywhere">Transmissão Pro&nbsp;2.0 <span style="color:#FFD21F">com até 73% de desconto</span></h1>
 <p style="margin:0;font-size:clamp(17px,1.6vw,20px);line-height:1.55;color:#B8B8B8;max-width:560px">Do básico ao avançado, em um só curso. Aprenda a transmitir com qualidade profissional e aproveite o desconto de Black November até 30 de novembro.</p>
@@ -129,12 +127,12 @@ html{scroll-behavior:smooth}
 <span style="font-size:14px;color:#B8B8B8;text-align:center;margin-top:4px">Compra segura pela Kiwify · Garantia por 7 dias ou devolução do seu dinheiro</span>
 </div>
 </div>
-<div class="rvR" style="flex:1 1 380px;min-width:0;aspect-ratio:4/5;max-height:640px;border-radius:24px;overflow:hidden;border:1px solid #2C3036"><picture><source type="image/webp" srcset="/black/assets/fabio-hero-640.webp 640w, /black/assets/fabio-hero-1200.webp 1200w" sizes="(max-width:700px) 92vw, 512px"><img src="/black/assets/fabio-hero.jpg" width="1200" height="1500" fetchpriority="high" alt="Fábio com câmera e PTZ na Transmissão Pro 2.0" style="width:100%;height:100%;object-fit:cover;display:block"></picture></div>
+<div style="flex:1 1 380px;min-width:0;aspect-ratio:4/5;max-height:640px;border-radius:24px;overflow:hidden;border:1px solid #2C3036"><picture><source type="image/webp" srcset="/black/assets/fabio-hero-640.webp 640w, /black/assets/fabio-hero-1200.webp 1200w" sizes="(max-width:700px) 92vw, 512px"><img src="/black/assets/fabio-hero.jpg" width="1200" height="1500" fetchpriority="high" alt="Fábio com câmera e PTZ na Transmissão Pro 2.0" style="width:100%;height:100%;object-fit:cover;display:block"></picture></div>
 </section>
 
 <section aria-label="Vídeo de apresentação" class="sec" style="padding-top:clamp(32px,5vw,56px)">
 <div class="rvZ" style="position:relative;width:100%;aspect-ratio:16/9;border-radius:24px;overflow:hidden;border:1px solid #2C3036;background:#0A0A0A">
-<iframe id="yt-main" src="https://www.youtube-nocookie.com/embed/o4bE450_-A4?autoplay=1&amp;mute=1&amp;playsinline=1&amp;rel=0&amp;modestbranding=1" title="Vídeo de apresentação da Transmissão Pro 2.0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>
+<iframe id="yt-main" loading="lazy" src="https://www.youtube-nocookie.com/embed/o4bE450_-A4?autoplay=1&amp;mute=1&amp;playsinline=1&amp;rel=0&amp;modestbranding=1" title="Vídeo de apresentação da Transmissão Pro 2.0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>
 </div>
 <p style="margin:10px 0 0;text-align:center;font-size:14px;color:#B8B8B8">O vídeo começa sem som: toque no player para ativar o áudio.</p>
 </section>
@@ -275,7 +273,7 @@ html{scroll-behavior:smooth}
 <div class="rv" style="background:#FFD21F;color:#0A0A0A;border-radius:24px;padding:clamp(36px,6vw,64px) clamp(20px,4vw,48px);display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center;box-sizing:border-box">
 <span style="font-size:14px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase">Última chamada · Black November</span>
 <h2 style="margin:0;font-family:'Archivo',sans-serif;font-weight:800;font-size:clamp(1.875rem,5vw,3.5rem);line-height:1.02;max-width:820px;overflow-wrap:anywhere">Antes que acabe: de R$ 297 por 12x de R$ 8,26 só até 30/11</h2>
-<a class="btn btn-dk" href="https://pay.kiwify.com.br/OHuG7Jx" rel="noopener">Quero o Pro 2.0 com até 73% de desconto</a>
+<a id="cta-final" class="btn btn-dk" href="https://pay.kiwify.com.br/OHuG7Jx" rel="noopener">Quero o Pro 2.0 com até 73% de desconto</a>
 <span style="font-size:15px;font-weight:500">12x de R$ 8,26 ou R$ 79,90 à vista<br>Garantia por 7 dias ou devolução do seu dinheiro</span>
 </div>
 </section>
@@ -309,11 +307,11 @@ html{scroll-behavior:smooth}
   // atraso em cascata para as linhas das listas
   document.querySelectorAll('.tl').forEach(function(list){
     var i = 0;
-    list.querySelectorAll('.tw').forEach(function(t){ t.style.transitionDelay = (0.25 + i * 0.35) + 's'; i++; });
+    list.querySelectorAll('.tw').forEach(function(t){ t.style.transitionDelay = (i * 0.08) + 's'; i++; });
   });
   function show(el){
     el.classList.add('in');
-    // depois de revelar, tira as classes de animação para o hover (zoom) funcionar normalmente
+    // depois de revelar, tira as classes de animação (libera a camada de composição)
     setTimeout(function(){
       el.classList.remove('rv','rv2','rv3','rvL','rvR','rvZ','rvZ2','rvZ3','spn');
       el.style.transitionDelay = '';
@@ -346,15 +344,20 @@ html{scroll-behavior:smooth}
   window.addEventListener('scroll', ask, { passive: true });
   window.addEventListener('load', ask);
 })();
-// barra fixa (mobile): some enquanto o botão do topo está visível, para não repetir o mesmo botão
+// barra fixa (mobile): some enquanto o botão do topo ou o botão final estão visíveis, para não repetir o mesmo botão
 (function(){
-  var bar = document.querySelector('.stk'), cta = document.getElementById('cta-hero');
+  var bar = document.querySelector('.stk');
+  var ctas = ['cta-hero', 'cta-final'].map(function(id){ return document.getElementById(id); }).filter(Boolean);
   if (!bar) return;
-  if (!cta || !('IntersectionObserver' in window)) { bar.classList.add('on'); return; }
-  new IntersectionObserver(function(en){
-    var e = en[0];
-    bar.classList.toggle('on', !e.isIntersecting);
-  }).observe(cta);
+  if (!ctas.length || !('IntersectionObserver' in window)) { bar.classList.add('on'); return; }
+  var seen = new Map();
+  var io = new IntersectionObserver(function(en){
+    en.forEach(function(e){ seen.set(e.target, e.isIntersecting); });
+    var any = false;
+    seen.forEach(function(v){ if (v) any = true; });
+    bar.classList.toggle('on', !any);
+  });
+  ctas.forEach(function(c){ io.observe(c); });
 })();
 </script>
 </body>
