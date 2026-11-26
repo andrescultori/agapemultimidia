@@ -1,7 +1,7 @@
 # Ágape Multimidia — Claude context
 
 ## What this is
-Website and landing pages for Ágape Multimidia (live-streaming courses and consulting for churches). Client project (AMS). Client contact: Fábio. Today the repo holds one page: the Black November 2026 LP for the course "Transmissão Pro 2.0".
+Website and landing pages for Ágape Multimidia (live-streaming courses and consulting for churches). Client project (AMS). Client contact: Fábio. The repo holds two pages for the course "Transmissão Pro 2.0": `/cursos/` (regular sales page, blue, 12x R$ 12,40 or R$ 119,90, no dates; the home redirects here for now) and `/black/` (Black November 2026 LP, kept as is for future use). Home redirect: `vercel.json` (Vercel) and `hostgator/root-redirect.htaccess` (paste into `public_html/.htaccess`); both are temporary 302s.
 
 ## Stack
 - Frontend: static HTML + inline CSS + a little inline JS. No build step, no framework.
