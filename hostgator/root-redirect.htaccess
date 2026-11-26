@@ -1,0 +1,7 @@
+# Temporary redirect: home -> /cursos/ (until the new home is ready).
+# Paste at the TOP of public_html/.htaccess, ABOVE the "# BEGIN WordPress" block.
+# 302 = temporary. Remove these lines when the home goes live.
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule ^$ /cursos/ [R=302,L]
+</IfModule>
