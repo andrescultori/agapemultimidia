@@ -5,17 +5,19 @@ Website and landing pages for Ágape Multimidia (live-streaming courses and cons
 
 ## Stack
 - Frontend: static HTML + inline CSS + a little inline JS. No build step, no framework.
-- Backend/DB: none. No forms, no personal data collected.
+- Admin (see ADMIN.md): Vercel Functions in `api/`, Neon Postgres, Vercel Blob, Resend. Stores only the two admin emails, login codes (hashed), sessions and settings versions. The public pages collect no visitor data.
 - Checkout: Kiwify (external link `pay.kiwify.com.br`).
 - Video: YouTube embeds through `youtube-nocookie.com`.
-- Hosting: the client's HostGator account (WordPress site on the same domain). `black/` is uploaded by hand to `public_html/black/`. Planned: move the site to Cloudflare.
+- Hosting: Vercel (the admin needs it). HostGator/WordPress may still serve other parts of the domain; the `hostgator/` redirect file is only for that case. TODO(André): confirm how the repo deploys to Vercel and where DNS is managed.
 - Domain: `agapemultimidia.com.br`, registered at Registro.br (client's).
 
 ## Commands
 ```bash
-python3 -m http.server 8765   # then open http://127.0.0.1:8765/black/
+npm install
+npm run dev    # site + admin on http://127.0.0.1:8765/pro/ and /admin/ (in-memory DB, login code printed in the terminal)
+npm test       # backend tests (Node test runner + in-memory Postgres)
 ```
-There is no install, build or test command.
+Pages themselves are still plain static files; `python3 -m http.server 8765` serves them without the admin.
 
 ## Conventions
 - UI copy: pt-BR. Docs, comments and commit messages: English (older commits are in Portuguese).
@@ -25,12 +27,12 @@ There is no install, build or test command.
 
 ## Rules for Claude
 - Diagnose before changing; wait for André's confirmation on judgment calls (client name, prices, dates, what to publish).
-- Prices, dates, guarantee terms and lesson counts come from the client. Never change or invent them.
+- Prices, dates, guarantee terms and lesson counts come from the client. Never change or invent them. Prices on `/pro/` are edited by the client in the admin; the HTML keeps the last agreed values as a fallback, so update the fallback and `PAGES.pro.defaults` together only when the client confirms.
 - Never add fabricated testimonials, names or quotes. Testimonials are the client's real videos.
 - No trackers (Meta Pixel, GA, GTM) without a decision from André: adding one triggers the LGPD items in SECURITY.md.
 - The main video autoplays muted; other videos never autoplay.
 - Changes go through PRs from a branch off `main`; give André the link. Merging does not deploy: André uploads `black/` to HostGator.
-- Never commit secrets. This project has none today.
+- Never commit secrets. Admin secrets live only in Vercel environment variables (`.env.example` lists them).
 - Prefer the lowest operating cost.
 
 ## Model and context
@@ -59,7 +61,7 @@ Already available (no install):
 Deliberately not installed: style skills (hallmark/taste-skill), security-audit, supabase, vercel, claude-seo.
 
 ## Docs
-DESIGN.md · SECURITY.md · GUIDELINES.md
+DESIGN.md · SECURITY.md · GUIDELINES.md · ADMIN.md
 
 ## Open TODOs
 - TODO(André): what `/black` shows after the offer ends on 30/11/2026 (waiting on Fábio).

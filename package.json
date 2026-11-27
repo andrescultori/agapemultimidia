@@ -1,0 +1,20 @@
+{
+  "name": "agapemultimidia",
+  "private": true,
+  "type": "module",
+  "description": "\u00c1gape Multimidia landing pages and the settings admin (Vercel functions).",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "dev": "node scripts/dev-server.mjs"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.0",
+    "@vercel/blob": "^2.0.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.3.0"
+  }
+}

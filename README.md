@@ -10,6 +10,8 @@ black/            LP Black November 2026 → agapemultimidia.com.br/black/
   assets/         logo, favicon, foto do topo, imagem de compartilhamento e fontes (Archivo e Roboto, locais)
 ```
 
+Também há `pro/` (página de vendas), `admin/` (painel do cliente), `api/` (funções da Vercel), `shared/` e `db/`; veja `ADMIN.md`.
+
 A estrutura espelha o endereço final: o conteúdo de `black/` precisa ficar em `/black/` na raiz do domínio.
 
 ## Publicar a LP Black November na HostGator (manual)
