@@ -1,7 +1,12 @@
-# Temporary redirect: home -> /cursos/ (until the new home is ready).
+# Temporary redirects (302):
+#   /                         -> /pro/  (until the new home is ready)
+#   /transmissao-ao-vivo-pro  -> /pro/  (short link for the course)
+#   /cursos                   -> /pro/  (until the /cursos catalog page exists; remove this line then)
 # Paste at the TOP of public_html/.htaccess, ABOVE the "# BEGIN WordPress" block.
-# 302 = temporary. Remove these lines when the home goes live.
+# If WordPress has a page at /transmissao-ao-vivo-pro, these rules take over before it loads.
 <IfModule mod_rewrite.c>
 RewriteEngine On
-RewriteRule ^$ /cursos/ [R=302,L]
+RewriteRule ^$ /pro/ [R=302,L]
+RewriteRule ^transmissao-ao-vivo-pro/?$ /pro/ [R=302,L]
+RewriteRule ^cursos/?$ /pro/ [R=302,L]
 </IfModule>
