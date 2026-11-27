@@ -1,5 +1,7 @@
 {
   "redirects": [
-    { "source": "/", "destination": "/cursos/", "permanent": false }
+    { "source": "/", "destination": "/pro/", "permanent": false },
+    { "source": "/transmissao-ao-vivo-pro", "destination": "/pro/", "permanent": false },
+    { "source": "/cursos", "destination": "/pro/", "permanent": false }
   ]
 }
