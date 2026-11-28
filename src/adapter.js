@@ -4,7 +4,7 @@ import { withRequestDb } from '../api/_lib/db.js';
 
 export async function run(handler, request, env, extraQuery = {}) {
   for (const [k, v] of Object.entries(env || {})) if (typeof v === 'string') process.env[k] = v;
-  if (!process.env.DATABASE_URL) {
+  if (!process.env.DATABASE_URL && !env?.HYPERDRIVE) {
     // Diagnostic (names and types only, never values): what the Worker was given vs what process.env holds.
     const given = Object.keys(env || {}).map((k) => `${k}:${typeof env[k]}`).join(', ') || 'none';
     console.error(`DATABASE_URL missing in process.env. env given to Worker: ${given}. process.env keys: ${Object.keys(process.env).length}`);
@@ -39,5 +39,6 @@ export async function run(handler, request, env, extraQuery = {}) {
         };
         Promise.resolve(handler(req, res)).catch(reject);
       }),
+    env,
   );
 }

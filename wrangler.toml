@@ -7,6 +7,11 @@ compatibility_flags = ["nodejs_compat"]
 # Keep the plain variables set in the dashboard; without this, every deploy removes them.
 keep_vars = true
 
+# Database access from the Worker (see ADMIN.md, setup step 4). TODO: uncomment and paste the Hyperdrive config ID.
+# [[hyperdrive]]
+# binding = "HYPERDRIVE"
+# id = "<hyperdrive config id>"
+
 [assets]
 directory = "./dist"
 binding = "ASSETS"
