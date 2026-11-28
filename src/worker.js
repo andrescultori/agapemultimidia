@@ -2,6 +2,7 @@
 import settings from '../api/settings.js';
 import admin from '../api/admin/[action].js';
 import { run } from './adapter.js';
+import { blackEnded, BLACK_ENDS } from './black.js';
 
 // The public settings are read on every page view, so keep them in Cloudflare's edge cache for 60 s.
 async function publicSettings(request, env, ctx) {
@@ -28,6 +29,13 @@ async function publicSettings(request, env, ctx) {
 export default {
   async fetch(request, env, ctx) {
     const { pathname } = new URL(request.url);
+    if (pathname === '/black' || pathname === '/black/') {
+      // After the offer ends, send visitors to /pro; /pro shows a short notice when it sees ?from=black. Temporary (302).
+      if (blackEnded(Date.now(), env.BLACK_ENDS || BLACK_ENDS)) {
+        return new Response(null, { status: 302, headers: { Location: '/pro/?from=black', 'Cache-Control': 'no-store' } });
+      }
+      return env.ASSETS.fetch(request);
+    }
     if (pathname === '/api/settings') return publicSettings(request, env, ctx);
     const m = /^\/api\/admin\/([\w-]+)$/.exec(pathname);
     if (m) return run(admin, request, env, { action: m[1] });

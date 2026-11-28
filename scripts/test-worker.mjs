@@ -27,6 +27,7 @@ const testConfig = '.wrangler-test.toml';
 writeFileSync(testConfig, readFileSync('wrangler.toml', 'utf8').replace(/\[\[hyperdrive\]\][^[]*/, '') + '\n[[hyperdrive]]\nbinding = "HYPERDRIVE"\nid = "00000000000000000000000000000000"\n');
 const vars = {
   SESSION_SECRET: 'w'.repeat(40), ADMIN_EMAILS: 'fabio@example.com', RESEND_API_KEY: 'test', RESEND_FROM: 'a@b.c',
+  BLACK_ENDS: '2999-01-01T00:00:00-03:00', // keeps /black live in this run whatever the date; the redirect itself is covered in test/black.test.js
   RESEND_API_URL: `http://127.0.0.1:${mailPort}/emails`, SUPABASE_URL: 'https://abc.supabase.co',
 };
 const args = ['wrangler', 'dev', '-c', testConfig, '--local', '--port', String(workerPort), '--ip', '127.0.0.1', ...Object.entries(vars).flatMap(([k, v]) => ['--var', `${k}:${v}`])];
@@ -58,6 +59,8 @@ try {
     const r = await fetch(base + path, { redirect: 'manual' });
     check(`${path} redirects to pro.quaddro.com.br/agapemultimidia`, r.status === 302 && r.headers.get('location') === 'https://pro.quaddro.com.br/agapemultimidia');
   }
+  const blk = await fetch(base + '/black/');
+  check('/black/ still loads through the Worker before the offer ends', blk.status === 200 && /Black November/i.test(await blk.text()));
   const admin = await fetch(base + '/admin/');
   check('/admin/ has CSP + no-store', /default-src/.test(admin.headers.get('content-security-policy') || '') && /no-store/.test(admin.headers.get('cache-control') || ''));
   check('docs are not published', (await fetch(base + '/CLAUDE.md')).status === 404 && (await fetch(base + '/db/schema.sql')).status === 404);

@@ -2,6 +2,9 @@
 #   /                         -> /pro/  (until the new home is ready)
 #   /transmissao-ao-vivo-pro  -> /pro/  (short link for the course)
 #   /cursos                   -> /pro/  (until the /cursos catalog page exists; remove this line then)
+# /black -> /pro/?from=black is switched on AUTOMATICALLY on 01/12/2026 00:00 (Brasília) only on the Cloudflare Worker (src/black.js).
+# HostGator cannot read the date reliably, so on 01/12 uncomment the next line (and keep it until next year's Black Friday):
+#   RewriteRule ^black/?$ /pro/?from=black [R=302,L,QSA]
 # Paste at the TOP of public_html/.htaccess, ABOVE the "# BEGIN WordPress" block.
 # If WordPress has a page at /transmissao-ao-vivo-pro, these rules take over before it loads.
 <IfModule mod_rewrite.c>
