@@ -2,7 +2,7 @@
 // then walks the admin flow over HTTP. Usage: npm run test:worker   (builds dist/ first)
 import { spawn, execSync } from 'node:child_process';
 import http from 'node:http';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, rmSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { PGlite } from '@electric-sql/pglite';
 import { PGLiteSocketServer } from '@electric-sql/pglite-socket';
@@ -21,18 +21,21 @@ const mailServer = http.createServer((req, res) => {
   let b = ''; req.on('data', (d) => (b += d)); req.on('end', () => { mails.push(JSON.parse(b)); res.end('{"id":"x"}'); });
 }).listen(mailPort, '127.0.0.1');
 
+// The Worker reaches the database through a Hyperdrive binding (no DATABASE_URL), so the test config adds one and
+// points its local connection string at the in-memory Postgres.
+const testConfig = '.wrangler-test.toml';
+writeFileSync(testConfig, readFileSync('wrangler.toml', 'utf8').replace(/\[\[hyperdrive\]\][^[]*/, '') + '\n[[hyperdrive]]\nbinding = "HYPERDRIVE"\nid = "00000000000000000000000000000000"\n');
 const vars = {
-  DATABASE_URL: `postgres://postgres:x@127.0.0.1:${dbPort}/postgres`, DATABASE_SSL: 'disable',
   SESSION_SECRET: 'w'.repeat(40), ADMIN_EMAILS: 'fabio@example.com', RESEND_API_KEY: 'test', RESEND_FROM: 'a@b.c',
   RESEND_API_URL: `http://127.0.0.1:${mailPort}/emails`, SUPABASE_URL: 'https://abc.supabase.co',
 };
-const args = ['wrangler', 'dev', '--local', '--port', String(workerPort), '--ip', '127.0.0.1', ...Object.entries(vars).flatMap(([k, v]) => ['--var', `${k}:${v}`])];
-const worker = spawn('npx', args, { stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, CI: '1', WRANGLER_SEND_METRICS: 'false' } });
+const args = ['wrangler', 'dev', '-c', testConfig, '--local', '--port', String(workerPort), '--ip', '127.0.0.1', ...Object.entries(vars).flatMap(([k, v]) => ['--var', `${k}:${v}`])];
+const worker = spawn('npx', args, { stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, CI: '1', WRANGLER_SEND_METRICS: 'false', WRANGLER_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE: `postgres://postgres:x@127.0.0.1:${dbPort}/postgres` } });
 let log = '';
 worker.stdout.on('data', (d) => (log += d)); worker.stderr.on('data', (d) => (log += d));
 
 const base = `http://127.0.0.1:${workerPort}`;
-const stop = async () => { worker.kill('SIGTERM'); mailServer.close(); await dbServer.stop(); await pg.close(); };
+const stop = async () => { rmSync(testConfig, { force: true }); worker.kill('SIGTERM'); mailServer.close(); await dbServer.stop(); await pg.close(); };
 try {
   for (let i = 0; ; i++) {
     try { if ((await fetch(`${base}/pro/`)).ok) break; } catch {}
@@ -59,7 +62,7 @@ try {
   check('/admin/ has CSP + no-store', /default-src/.test(admin.headers.get('content-security-policy') || '') && /no-store/.test(admin.headers.get('cache-control') || ''));
   check('docs are not published', (await fetch(base + '/CLAUDE.md')).status === 404 && (await fetch(base + '/db/schema.sql')).status === 404);
 
-  // login with the real postgres.js on workerd
+  // login through Hyperdrive + node-postgres on workerd
   assert.equal((await post('/api/admin/otp-request', { email: 'stranger@example.com' })).status, 200);
   assert.equal(mails.length, 0, 'no mail for strangers');
   assert.equal((await post('/api/admin/otp-request', { email: 'fabio@example.com' })).status, 200);

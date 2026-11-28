@@ -1,4 +1,5 @@
 import postgres from 'postgres';
+import pg from 'pg';
 import { AsyncLocalStorage } from 'node:async_hooks';
 
 let override = null;
@@ -32,18 +33,29 @@ function connect() {
  * Required on Cloudflare Workers, where a connection cannot be reused by a different request.
  * On Node/Vercel the handlers run without it and share one client per instance.
  */
-export async function withRequestDb(fn) {
-  const scope = { client: null };
+export async function withRequestDb(fn, env) {
+  // On Cloudflare the database is reached through the Hyperdrive binding (Supabase's pooler uses a private CA that
+  // Workers do not trust). Hyperdrive wants the node-postgres driver, so that path uses `pg`; Node/Vercel keep postgres.js.
+  const scope = { client: null, pg: null, hyperdrive: env?.HYPERDRIVE?.connectionString || null };
   try {
     return await requestScope.run(scope, fn);
   } finally {
     if (scope.client) await scope.client.end({ timeout: 2 }).catch(() => {});
+    if (scope.pg) await scope.pg.then((c) => c.end()).catch(() => {});
   }
 }
 
 export async function query(text, params = []) {
   if (override) return override(text, params);
   const scope = requestScope.getStore();
+  if (scope?.hyperdrive) {
+    scope.pg ??= (async () => {
+      const c = new pg.Client({ connectionString: scope.hyperdrive });
+      await c.connect();
+      return c;
+    })();
+    return (await (await scope.pg).query(text, params)).rows;
+  }
   if (scope) return (scope.client ??= connect()).unsafe(text, params);
   return (shared ??= connect()).unsafe(text, params);
 }

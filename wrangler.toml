@@ -7,6 +7,12 @@ compatibility_flags = ["nodejs_compat"]
 # Keep the plain variables set in the dashboard; without this, every deploy removes them.
 keep_vars = true
 
+# Database access from the Worker (see ADMIN.md, setup step 4): Hyperdrive config "agapemultimidia-db" (query caching off).
+# The ID is not a secret.
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "742584c55f2144f29d1ddd0f43790279"
+
 [assets]
 directory = "./dist"
 binding = "ASSETS"
