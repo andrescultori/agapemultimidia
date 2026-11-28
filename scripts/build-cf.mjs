@@ -1,4 +1,4 @@
-// Copies only the public static folders to dist/ so source, docs and tests are never published.
+// Builds dist/: only the public static folders (source, docs and tests are never published) plus _redirects/_headers.
 import { cpSync, rmSync, mkdirSync } from 'node:fs';
 rmSync('dist', { recursive: true, force: true });
 mkdirSync('dist');

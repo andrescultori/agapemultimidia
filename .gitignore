@@ -5,3 +5,5 @@ node_modules/
 .vercel/
 .impeccable/config.local.json
 dist/
+.wrangler/
+.dev.vars

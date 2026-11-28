@@ -21,7 +21,7 @@ The public pages have no forms, no cookies set by us, no analytics or pixels. Th
 Supabase Postgres, reached only from Vercel functions with the server-side `DATABASE_URL`. `db/schema.sql` puts everything in its own schema `agape_admin`, enables RLS on every table with no policies and revokes privileges from the Supabase `anon`/`authenticated` roles, so nothing is reachable through the Supabase REST API. The admin API connects as the restricted role `agape_admin_app` (`db/app-role.sql`): usage on that schema only, explicit RLS policies on the three tables, no access to `public`, `auth` or `storage` tables, not a superuser. The admin API is the only writer. Currently the test data lives in André's own Supabase project (shared with other apps); move it to a dedicated project before real use.
 
 ## Secrets
-None in the repo or its history (checked 2026-11-13). Admin secrets are Vercel environment variables only: `SESSION_SECRET`, `ADMIN_EMAILS`, `RESEND_API_KEY`, `DATABASE_URL`, `SUPABASE_SERVICE_KEY`. Rotate `SESSION_SECRET` to log everyone out. HostGator/cPanel credentials live with André and the client, never in the repo.
+None in the repo or its history (checked 2026-11-13). Admin secrets are host environment variables only (Cloudflare Secrets, Vercel): `SESSION_SECRET`, `ADMIN_EMAILS`, `RESEND_API_KEY`, `DATABASE_URL`, `SUPABASE_SERVICE_KEY`. Rotate `SESSION_SECRET` to log everyone out. HostGator/cPanel credentials live with André and the client, never in the repo.
 
 ## Access
 | Account | Owner | André's access | Revoke at handoff? |
