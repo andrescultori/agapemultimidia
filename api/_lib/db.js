@@ -12,7 +12,11 @@ export function setDb(fn) {
 
 function connect() {
   const url = process.env.DATABASE_URL || process.env.POSTGRES_URL;
-  if (!url) throw new Error('DATABASE_URL is not set');
+  if (!url) {
+    // Names only, never values: shows in the logs which settings actually reached this runtime.
+    const seen = Object.keys(process.env).filter((k) => /DATABASE|POSTGRES|SESSION|SUPABASE|RESEND|ADMIN/.test(k)).sort();
+    throw new Error(`DATABASE_URL is not set (settings seen: ${seen.join(', ') || 'none'})`);
+  }
   // Works with Supabase's transaction pooler (port 6543): no prepared statements, one connection per client.
   return postgres(url, {
     prepare: false,
