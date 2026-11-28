@@ -24,7 +24,7 @@ const mailServer = http.createServer((req, res) => {
 // The Worker reaches the database through a Hyperdrive binding (no DATABASE_URL), so the test config adds one and
 // points its local connection string at the in-memory Postgres.
 const testConfig = '.wrangler-test.toml';
-writeFileSync(testConfig, readFileSync('wrangler.toml', 'utf8') + '\n[[hyperdrive]]\nbinding = "HYPERDRIVE"\nid = "00000000000000000000000000000000"\n');
+writeFileSync(testConfig, readFileSync('wrangler.toml', 'utf8').replace(/\[\[hyperdrive\]\][^[]*/, '') + '\n[[hyperdrive]]\nbinding = "HYPERDRIVE"\nid = "00000000000000000000000000000000"\n');
 const vars = {
   SESSION_SECRET: 'w'.repeat(40), ADMIN_EMAILS: 'fabio@example.com', RESEND_API_KEY: 'test', RESEND_FROM: 'a@b.c',
   RESEND_API_URL: `http://127.0.0.1:${mailPort}/emails`, SUPABASE_URL: 'https://abc.supabase.co',
