@@ -20,7 +20,8 @@ Lets the client edit prices, the buy link, KPIs, videos, hero image and general 
 2. **Resend:** for tests set `RESEND_FROM=onboarding@resend.dev` and put only your own Resend-account email in `ADMIN_EMAILS`. For Fábio: verify `agapemultimidia.com.br` (SPF/DKIM records in Cloudflare DNS, DNS only), then use `no-reply@agapemultimidia.com.br`. API key with *sending access* only.
 3. **Cloudflare Worker** (client's account, André as member): Workers & Pages → Create → **Import a repository** (GitHub) → this repo, branch `main`. Build command `npm run build:cf`, deploy command `npx wrangler deploy`. After the first deploy, open the `*.workers.dev` URL and test `/pro/` and `/admin/`.
 4. **Variables and Secrets** (Worker → Settings, runtime, not "Build"): secrets `DATABASE_URL`, `SUPABASE_SERVICE_KEY`, `SESSION_SECRET`, `RESEND_API_KEY`; plain `SUPABASE_URL`, `SUPABASE_BUCKET`, `ADMIN_EMAILS`, `RESEND_FROM`. See `.env.example` for what each is. `DATABASE_URL` is the Supabase **Transaction pooler** string with the user changed to `agape_admin_app.<project-ref>` and the real pooler host.
-5. Log in at `/admin/`, press "Publicar…" once with no changes to confirm the round trip.
+5. **Logs:** stored logs are on via `wrangler.toml` (`[observability.logs]`). Read them in the Worker → **Observability** → Logs (or **Live** for a real-time stream). Login failures are logged as "otp request failed: …"; the login screen always says "code sent" on purpose.
+6. Log in at `/admin/`, press "Publicar…" once with no changes to confirm the round trip.
 
 ### Domain cutover (Cloudflare, domain registered at Registro.br)
 1. Add the site in Cloudflare (Connect a domain, Free plan) and review the imported DNS records. Keep verification TXT records; delete the old HostGator records.

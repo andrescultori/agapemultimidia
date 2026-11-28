@@ -12,3 +12,9 @@ directory = "./dist"
 binding = "ASSETS"
 # Only /api/* runs the Worker; everything else is served straight from the static assets.
 run_worker_first = ["/api/*"]
+
+# Stored logs (Worker > Observability > Logs). Without this block, a deploy resets the dashboard toggle and
+# console.error output (e.g. "otp request failed") is only visible in a live tail.
+[observability.logs]
+enabled = true
+invocation_logs = true
