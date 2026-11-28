@@ -1,8 +1,8 @@
 {
   "redirects": [
     { "source": "/", "destination": "/pro/", "permanent": false },
-    { "source": "/transmissao-ao-vivo-pro", "destination": "/pro/", "permanent": false },
-    { "source": "/cursos", "destination": "/pro/", "permanent": false },
+    { "source": "/transmissao-ao-vivo-pro/:path*", "destination": "/pro/", "permanent": false },
+    { "source": "/cursos/:path*", "destination": "/pro/", "permanent": false },
     { "source": "/admin", "destination": "/admin/", "permanent": false }
   ],
   "headers": [
