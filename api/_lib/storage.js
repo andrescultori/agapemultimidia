@@ -15,7 +15,8 @@ export async function putImage(path, buf, contentType) {
   if (!base || !key) throw new Error('SUPABASE_URL / SUPABASE_SERVICE_KEY are not set');
   const res = await fetch(`${base}/storage/v1/object/${bucket()}/${path}`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${key}`, apikey: key, 'Content-Type': contentType, 'x-upsert': 'true' },
+    // New-style keys (sb_secret_...) go in `apikey` only; legacy service_role JWTs also go in Authorization.
+    headers: { apikey: key, ...(key.startsWith('sb_') ? {} : { Authorization: `Bearer ${key}` }), 'Content-Type': contentType, 'x-upsert': 'true' },
     body: buf,
   });
   if (!res.ok) throw new Error(`Storage responded ${res.status}`);
