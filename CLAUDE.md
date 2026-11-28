@@ -24,7 +24,7 @@ Pages themselves are still plain static files; `python3 -m http.server 8765` ser
 - UI copy: pt-BR. Docs, comments and commit messages: English (older commits are in Portuguese).
 - Paths are absolute from the domain root (`/pro/assets/...`, `/black/assets/...`), so the folder layout must mirror the final URL.
 - Fonts are self-hosted in `<page>/assets/fonts/` (Archivo, Roboto). Do not add font CDNs.
-- Redirects live in three places that must stay in sync: `vercel.json`, `scripts/build-cf.mjs` (Cloudflare `_redirects`) and `hostgator/root-redirect.htaccess`.
+- Redirects live in three places that must stay in sync: `vercel.json`, `scripts/build-cf.mjs` (Cloudflare `_redirects`) and `hostgator/root-redirect.htaccess`. The dated `/black` redirect is the exception: it lives in the Worker (see Open TODOs).
 - One page = one folder with `index.html` + `assets/`.
 
 ## Rules for Claude
@@ -66,7 +66,7 @@ Deliberately not installed: style skills (hallmark/taste-skill), security-audit,
 DESIGN.md · SECURITY.md · GUIDELINES.md · ADMIN.md
 
 ## Open TODOs
-- TODO(André): what `/black` shows after the offer ends on 30/11/2026 (waiting on Fábio).
+- Done: after the offer, `/black` redirects to `/pro/?from=black` (302) at 01/12/2026 00:00 Brasília, automatically, in the Cloudflare Worker (`src/black.js`, `run_worker_first` in `wrangler.toml`); `/pro` then shows a dismissible notice (price from the admin settings). Vercel and HostGator cannot read the date: HostGator needs the commented line in `hostgator/root-redirect.htaccess` on 01/12; Vercel keeps `/black` live. Fábio must also end the R$ 79,90 offer on Kiwify.
 - TODO(André): Cloudflare cutover (Worker deploy, Registro.br nameservers, custom domain); steps in ADMIN.md.
 - TODO(André): decide what to do with the admin (keep and trim, or replace with something simpler); review in SECURITY.md "Open items".
 - TODO(André): blue hero image and share image for `/pro/` (client); confirm the footnote wording with Fábio.

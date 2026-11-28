@@ -16,8 +16,8 @@ id = "742584c55f2144f29d1ddd0f43790279"
 [assets]
 directory = "./dist"
 binding = "ASSETS"
-# Only /api/* runs the Worker; everything else is served straight from the static assets.
-run_worker_first = ["/api/*"]
+# Only /api/* and the /black page run the Worker (the date check that redirects /black to /pro after the offer); everything else is served straight from the static assets.
+run_worker_first = ["/api/*", "/black", "/black/"]
 
 # Observability: same values Cloudflare shows when you enable logs in the dashboard. Keeping them here stops a deploy
 # from resetting the toggle. (Cloudflare also lists issue_detection = false; this Wrangler version rejects it, and it is off by default.) Logs: Worker > Observability. console.error output (e.g. "otp request failed") appears there.
