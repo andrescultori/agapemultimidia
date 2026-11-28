@@ -41,13 +41,16 @@ try {
   }
   const post = (path, body, cookie) => fetch(base + path, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: base, ...(cookie ? { cookie } : {}) }, body: JSON.stringify(body) });
   const put = (path, body, cookie) => fetch(base + path, { method: 'PUT', headers: { 'Content-Type': 'application/json', Origin: base, cookie }, body: JSON.stringify(body) });
-  const check = (name, ok) => console.log(ok ? '  ok  ' : '  FAIL', name);
+  let failures = 0;
+  const check = (name, ok) => { if (!ok) failures++; console.log(ok ? '  ok  ' : '  FAIL', name); };
 
   // static assets, redirects, headers (served from dist/ without running the Worker)
   const root = await fetch(base + '/', { redirect: 'manual' });
   check('/ redirects to /pro/', root.status === 302 && root.headers.get('location').endsWith('/pro/'));
-  const cursos = await fetch(base + '/cursos', { redirect: 'manual' });
-  check('/cursos redirects to /pro/', cursos.status === 302 && cursos.headers.get('location').endsWith('/pro/'));
+  for (const path of ['/cursos', '/cursos/', '/transmissao-ao-vivo-pro', '/transmissao-ao-vivo-pro/', '/transmissao-ao-vivo-pro/qualquer-coisa']) {
+    const r = await fetch(base + path, { redirect: 'manual' });
+    check(`${path} redirects to /pro/`, r.status === 302 && r.headers.get('location').endsWith('/pro/'));
+  }
   const admin = await fetch(base + '/admin/');
   check('/admin/ has CSP + no-store', /default-src/.test(admin.headers.get('content-security-policy') || '') && /no-store/.test(admin.headers.get('cache-control') || ''));
   check('docs are not published', (await fetch(base + '/CLAUDE.md')).status === 404 && (await fetch(base + '/db/schema.sql')).status === 404);
@@ -76,6 +79,7 @@ try {
   const dr = await (await fetch(base + '/api/settings?page=pro&draft=1')).json();
   check('draft flag without a session returns published data', dr.data.kpis[0] === '190 mil' && !dr.draft);
   check('unauthenticated admin call is rejected', (await fetch(base + '/api/admin/state')).status === 401);
+  if (failures) throw new Error(`${failures} check(s) failed`);
   console.log('worker flow passed');
 } catch (e) {
   console.error('FAILED:', e.message, '\n--- worker log tail ---\n' + log.slice(-2500));
