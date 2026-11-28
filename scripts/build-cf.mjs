@@ -10,6 +10,7 @@ writeFileSync('dist/_redirects', [
   '/ /pro/ 302',
   '/transmissao-ao-vivo-pro /pro/ 302', '/transmissao-ao-vivo-pro/ /pro/ 302', '/transmissao-ao-vivo-pro/* /pro/ 302',
   '/cursos /pro/ 302', '/cursos/ /pro/ 302', '/cursos/* /pro/ 302',
+  '/consultoria https://pro.quaddro.com.br/agapemultimidia 302', '/consultoria/ https://pro.quaddro.com.br/agapemultimidia 302', '/consultoria/* https://pro.quaddro.com.br/agapemultimidia 302',
   '/admin /admin/ 302', '',
 ].join('\n'));
 writeFileSync('dist/_headers', [
