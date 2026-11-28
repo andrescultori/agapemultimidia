@@ -38,9 +38,20 @@ create table if not exists agape_admin.settings_versions (
 create unique index if not exists settings_one_draft on agape_admin.settings_versions (page) where status = 'draft';
 create index if not exists settings_published on agape_admin.settings_versions (page, id desc) where status = 'published';
 
+-- People allowed to log in besides the owners listed in the ADMIN_EMAILS variable (managed from /admin/ > Administradores).
+create table if not exists agape_admin.admins (
+  id          bigserial primary key,
+  email       text        not null,
+  name        text,
+  created_by  text        not null,
+  created_at  timestamptz not null default now()
+);
+create unique index if not exists admins_email_lower on agape_admin.admins (lower(email));
+
 alter table agape_admin.otp_codes         enable row level security;
 alter table agape_admin.sessions          enable row level security;
 alter table agape_admin.settings_versions enable row level security;
+alter table agape_admin.admins            enable row level security;
 
 -- Supabase API roles must not see this schema (the roles do not exist on a plain Postgres, hence the guard).
 do $$

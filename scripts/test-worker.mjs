@@ -74,6 +74,19 @@ try {
   const me = await (await fetch(base + '/api/admin/me', { headers: { cookie } })).json();
   check('session works', me.email === 'fabio@example.com');
 
+  // admin management (table agape_admin.admins) through the Worker + Hyperdrive path
+  const adminsUrl = (a) => `/api/admin/${a}`;
+  const list0 = await (await fetch(base + adminsUrl('admins-list'), { headers: { cookie } })).json();
+  check('admins-list shows the protected owner and an empty table', list0.owners.includes('fabio@example.com') && list0.admins.length === 0 && !list0.unavailable);
+  const added = await (await post(adminsUrl('admins-add'), { email: 'Novo@Example.com', name: 'Novo' }, cookie)).json();
+  check('admins-add stores the normalized email', added.admin?.email === 'novo@example.com' && added.admins.length === 1);
+  check('duplicate email is a 409', (await post(adminsUrl('admins-add'), { email: 'NOVO@example.com' }, cookie)).status === 409);
+  check('adding an owner is a 409', (await post(adminsUrl('admins-add'), { email: 'fabio@example.com' }, cookie)).status === 409);
+  const renamed = await put(adminsUrl('admins-update'), { id: added.admin.id, name: 'Renomeado' }, cookie);
+  check('admins-update changes the name', renamed.status === 200 && (await renamed.json()).admins[0].name === 'Renomeado');
+  const removed = await post(adminsUrl('admins-remove'), { id: added.admin.id }, cookie);
+  check('admins-remove deletes the row', removed.status === 200 && (await removed.json()).admins.length === 0);
+
   // draft -> publish -> public read through the edge cache
   const st = await (await fetch(base + '/api/admin/state?page=pro', { headers: { cookie } })).json();
   const next = structuredClone(st.defaults); next.kpis[0] = '190 mil';

@@ -4,10 +4,18 @@ Lets the client edit prices, the buy link, KPIs, videos, hero image and general 
 
 ## How it works
 - The pages keep their original text in the HTML. When they open, `shared/site-settings.js` asks `GET /api/settings?page=pro` and replaces the marked values (`data-b`, `data-buy`, `data-kpi`, `data-link`, `data-video`, `data-hero-img`). If the request fails, the original text stays.
-- Login: allow-listed email → 6-digit code (Resend) → 8-hour session cookie (HttpOnly, Secure, SameSite=Strict).
+- Login: allowed email → 6-digit code (Resend) → 8-hour session cookie (HttpOnly, Secure, SameSite=Strict). Allowed = an owner in `ADMIN_EMAILS` or a person in the `admins` table (see "Administradores" below).
 - Editing: **save draft → preview (`/pro/?preview=draft`) → publish**. Publishing shows a diff and highlights price changes. Every publish is a row in `settings_versions` (who, when, changed fields); "Restaurar" copies an old version back into the draft.
 - Public reads are cached 60 s at the edge, so a publish is live within about a minute.
 - Not editable here (static in the HTML): `<title>`, meta description and share-preview (og) tags. Search and WhatsApp previews keep the original text. The page `<title>` is updated in the browser only for the discount %.
+
+## Administradores (who can log in)
+- **Owners:** the emails in the `ADMIN_EMAILS` variable. They can always log in, are shown as **Protegido** in the screen and can never be edited or removed from it, so a mistake on the screen cannot lock everyone out. Change owners only in the host's variables.
+- **Admins:** everyone else, kept in the table `agape_admin.admins` and managed in **/admin/ → Administradores**: add (email + optional name), edit (email and/or name) and remove. Any logged-in admin can do this for the others.
+- A new or changed email is proven by the login code sent to it, as for everyone. Removing an admin, or changing an admin's email, deletes that address's open sessions and pending codes at once.
+- Guard rails: you cannot remove yourself or change your own email (it would end your session; changing your own name is fine); an address that is already an owner or an admin is refused (409); emails are stored lowercase and compared case-insensitively.
+- **The table needs a migration on an existing database:** run `db/migrations/2026-11-28-admins.sql` in the Supabase SQL editor (idempotent; fresh installs get the table from `db/schema.sql`). Until it runs, the admin keeps working with `ADMIN_EMAILS` only, the failure is logged (`admins lookup failed, using ADMIN_EMAILS only`) and the Administradores screen says the list is not active yet.
+- New admins can only receive their login codes once the sender domain is verified in Resend. With `RESEND_FROM=onboarding@resend.dev`, codes reach only the Resend account owner's address.
 
 ## Stack
 - **Hosting: Cloudflare Workers with static assets** (target; the site is still on Vercel until DNS is switched). One Worker (`src/worker.js`) serves `/api/*`; every other request is served straight from the static files in `dist/` (built by `npm run build:cf`, which also writes `_redirects` and `_headers`). `wrangler.toml` holds the config.
@@ -16,11 +24,11 @@ Lets the client edit prices, the buy link, KPIs, videos, hero image and general 
 - `api/` holds the handlers (plain Node-style). `src/adapter.js` runs them in the Worker; on Vercel they run as Vercel Functions. The same code works on both, so the Vercel files (`vercel.json`, `.vercelignore`) stay until the cutover is done.
 
 ## Setup checklist (once)
-1. **Supabase:** run `db/schema.sql`, then `db/app-role.sql`, then set the role password in the SQL editor: `alter role agape_admin_app with password '<long random password>';` (letters and digits only). Create a **public** bucket (the test project uses `fabio-site-images`).
+1. **Supabase:** run `db/schema.sql`, then `db/app-role.sql` (for a database created before the Administradores screen, run `db/migrations/2026-11-28-admins.sql` instead of repeating these), then set the role password in the SQL editor: `alter role agape_admin_app with password '<long random password>';` (letters and digits only). Create a **public** bucket (the test project uses `fabio-site-images`).
 2. **Resend:** for tests set `RESEND_FROM=onboarding@resend.dev` and put only your own Resend-account email in `ADMIN_EMAILS`. For Fábio: verify `agapemultimidia.com.br` (SPF/DKIM records in Cloudflare DNS, DNS only), then use `no-reply@agapemultimidia.com.br`. API key with *sending access* only.
 3. **Cloudflare Worker** (client's account, André as member): Workers & Pages → Create → **Import a repository** (GitHub) → this repo, branch `main`. Build command `npm run build:cf`, deploy command `npx wrangler deploy`. After the first deploy, open the `*.workers.dev` URL and test `/pro/` and `/admin/`.
 4. **Hyperdrive (database access from the Worker).** Workers do not trust Supabase's private CA, so a direct connection to the pooler fails with `TLS_HANDSHAKE_FAILED`. Create a Hyperdrive config instead: Cloudflare dashboard → Workers & Pages → **Hyperdrive** → Create configuration. Use the Supabase **Direct connection** values (host `db.<project-ref>.supabase.co`, port `5432`, database `postgres`), user `agape_admin_app` and its password. Turn **Query caching off** (a published change must show right away). Copy the config ID into the `[[hyperdrive]]` block of `wrangler.toml`. The Worker reads the database only through this binding, so it needs no `DATABASE_URL`. On Vercel/Node `DATABASE_URL` (Transaction pooler string, user `agape_admin_app.<project-ref>`) is still used.
-5. **Variables and Secrets** (Worker → Settings → **Runtime** variables and secrets, not the "Builds" section; the Builds list is build-time only and the running Worker never sees it): secrets `SUPABASE_SERVICE_KEY`, `SESSION_SECRET`, `RESEND_API_KEY`; plain `SUPABASE_URL`, `SUPABASE_BUCKET`, `ADMIN_EMAILS`, `RESEND_FROM`. See `.env.example` for what each is.
+5. **Variables and Secrets** (Worker → Settings → **Runtime** variables and secrets, not the "Builds" section; the Builds list is build-time only and the running Worker never sees it): secrets `SUPABASE_SERVICE_KEY`, `SESSION_SECRET`, `RESEND_API_KEY`; plain `SUPABASE_URL`, `SUPABASE_BUCKET`, `ADMIN_EMAILS` (the protected owners), `RESEND_FROM`. See `.env.example` for what each is.
 6. **Logs:** stored logs are on via `wrangler.toml` (`[observability.logs]`). Read them in the Worker → **Observability** → Logs (or **Live** for a real-time stream). Login failures are logged as "otp request failed: …"; the login screen always says "code sent" on purpose.
 7. Log in at `/admin/`, press "Publicar…" once with no changes to confirm the round trip.
 
@@ -48,6 +56,7 @@ npm run test:worker   # the same flow inside the real Cloudflare Workers runtime
 ## Rules enforced on the server
 - Prices: cash < original; discount % equals the computed value (floor or round); installments × value ≥ cash; "menos de R$ X por mês" must be above the installment.
 - Buy link: https on `kiwify.com.br` only. Social links: https on the matching site only. Videos: valid YouTube id or URL. Image: JPG/PNG/WebP (checked by file signature), ≤ 4 MB, stored in the Supabase bucket; only URLs of that bucket are accepted.
+- Administradores: valid email (max 254 characters), name up to 80 characters; no duplicates (case-insensitive), no owner addresses; no self-remove, no own-email change. All actions need a session and a same-origin request.
 - Login: unknown emails get the same answer as allowed ones; max 3 codes per email per 15 min and 10 per IP per hour; a code lives 10 min, is single-use and locks after 5 wrong tries.
 
 ## Adding a page (`/black/`, home)
