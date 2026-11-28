@@ -1,14 +1,14 @@
 # Ágape Multimidia — Claude context
 
 ## What this is
-Website and landing pages for Ágape Multimidia (live-streaming courses and consulting for churches). Client project (AMS). Client contact: Fábio. The repo holds two pages for the course "Transmissão Pro 2.0": `/pro/` (regular sales page, blue, 12x R$ 12,40 or R$ 119,90, no dates; the home, `/transmissao-ao-vivo-pro` and `/cursos` redirect here for now; `/cursos` is reserved for a future catalog page; `/consultoria` redirects to `https://pro.quaddro.com.br/agapemultimidia`) and `/black/` (Black November 2026 LP, kept as is for future use). Redirects: `vercel.json` (Vercel) and `hostgator/root-redirect.htaccess` (paste into `public_html/.htaccess`); both are temporary 302s.
+Website and landing pages for Ágape Multimidia (live-streaming courses and consulting for churches). Client project (AMS). Client contact: Fábio. The repo holds two pages for the course "Transmissão Pro 2.0" and a client admin panel (`/admin/`, see ADMIN.md): `/pro/` (regular sales page, blue, 12x R$ 12,40 or R$ 119,90, no dates; the home, `/transmissao-ao-vivo-pro` and `/cursos` redirect here for now; `/cursos` is reserved for a future catalog page; `/consultoria` redirects to `https://pro.quaddro.com.br/agapemultimidia`) and `/black/` (Black November 2026 LP, kept as is for future use). Redirects: `vercel.json` (Vercel) and `hostgator/root-redirect.htaccess` (paste into `public_html/.htaccess`); both are temporary 302s.
 
 ## Stack
-- Frontend: static HTML + inline CSS + a little inline JS. No build step, no framework.
+- Frontend: static HTML + inline CSS + a little inline JS, no framework. `/pro/` loads `shared/site-settings.js`, which swaps prices, buy link, KPIs, videos, hero image and links with the values published in the admin (the HTML keeps the same values as fallback). Build step only for Cloudflare (`npm run build:cf` → `dist/`).
 - Admin (see ADMIN.md): handlers in `api/`, run as a Cloudflare Worker (`src/worker.js`) or as Vercel Functions, Supabase (schema `agape_admin` + bucket `site-images`), Resend. Stores only the two admin emails, login codes (hashed), sessions and settings versions. The public pages collect no visitor data.
 - Checkout: Kiwify (external link `pay.kiwify.com.br`).
 - Video: YouTube embeds through `youtube-nocookie.com`.
-- Hosting: moving from Vercel (`agapemultimidia.vercel.app`, current) to Cloudflare Workers with static assets (client's Cloudflare account). DNS stays at Registro.br nameservers → Cloudflare. HostGator/WordPress goes away at the cutover; the `hostgator/` redirect file is obsolete after that. See ADMIN.md for the cutover steps.
+- Hosting: Vercel project `agapemultimidia` (team AMS, `ams-de94`) auto-deploys `main` and builds a preview per PR. The official domain still serves from HostGator (manual upload). Target: Cloudflare Workers with static assets (client's Cloudflare account). DNS stays at Registro.br nameservers → Cloudflare. HostGator/WordPress goes away at the cutover; the `hostgator/` redirect file is obsolete after that. See ADMIN.md for the cutover steps.
 - Domain: `agapemultimidia.com.br`, registered at Registro.br (client's).
 
 ## Commands
@@ -22,8 +22,9 @@ Pages themselves are still plain static files; `python3 -m http.server 8765` ser
 
 ## Conventions
 - UI copy: pt-BR. Docs, comments and commit messages: English (older commits are in Portuguese).
-- Paths are absolute from the domain root (`/black/assets/...`), so the folder layout must mirror the final URL.
-- Fonts are self-hosted in `black/assets/fonts/` (Archivo, Roboto). Do not add font CDNs.
+- Paths are absolute from the domain root (`/pro/assets/...`, `/black/assets/...`), so the folder layout must mirror the final URL.
+- Fonts are self-hosted in `<page>/assets/fonts/` (Archivo, Roboto). Do not add font CDNs.
+- Redirects live in three places that must stay in sync: `vercel.json`, `scripts/build-cf.mjs` (Cloudflare `_redirects`) and `hostgator/root-redirect.htaccess`.
 - One page = one folder with `index.html` + `assets/`.
 
 ## Rules for Claude
@@ -32,7 +33,7 @@ Pages themselves are still plain static files; `python3 -m http.server 8765` ser
 - Never add fabricated testimonials, names or quotes. Testimonials are the client's real videos.
 - No trackers (Meta Pixel, GA, GTM) without a decision from André: adding one triggers the LGPD items in SECURITY.md.
 - The main video autoplays muted; other videos never autoplay.
-- Changes go through PRs from a branch off `main`; give André the link. Merging does not deploy: André uploads `black/` to HostGator.
+- Changes go through PRs from a branch off `main`; give André the link. Merging deploys to Vercel only; the official domain (HostGator) needs André's manual upload until the DNS cutover. The admin and `/api/*` do not run on HostGator.
 - Never commit secrets. Admin secrets live only in the host's environment variables (Cloudflare Secrets / Vercel) (`.env.example` lists them).
 - Prefer the lowest operating cost.
 
@@ -67,4 +68,7 @@ DESIGN.md · SECURITY.md · GUIDELINES.md · ADMIN.md
 ## Open TODOs
 - TODO(André): what `/black` shows after the offer ends on 30/11/2026 (waiting on Fábio).
 - TODO(André): Cloudflare cutover (Worker deploy, Registro.br nameservers, custom domain); steps in ADMIN.md.
+- TODO(André): decide what to do with the admin (keep and trim, or replace with something simpler); review in SECURITY.md "Open items".
+- TODO(André): blue hero image and share image for `/pro/` (client); confirm the footnote wording with Fábio.
+- TODO(André): delete merged branches on GitHub; check `perf/lp-quieter-motion` and `feat/hero-foto-titulo` first (list in GUIDELINES.md).
 - TODO(André): where the Remotion lesson-cover project (`remotion-capas`) is versioned; it is not in this repo.
