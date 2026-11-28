@@ -51,6 +51,10 @@ try {
     const r = await fetch(base + path, { redirect: 'manual' });
     check(`${path} redirects to /pro/`, r.status === 302 && r.headers.get('location').endsWith('/pro/'));
   }
+  for (const path of ['/consultoria', '/consultoria/', '/consultoria/x']) {
+    const r = await fetch(base + path, { redirect: 'manual' });
+    check(`${path} redirects to pro.quaddro.com.br/agapemultimidia`, r.status === 302 && r.headers.get('location') === 'https://pro.quaddro.com.br/agapemultimidia');
+  }
   const admin = await fetch(base + '/admin/');
   check('/admin/ has CSP + no-store', /default-src/.test(admin.headers.get('content-security-policy') || '') && /no-store/.test(admin.headers.get('cache-control') || ''));
   check('docs are not published', (await fetch(base + '/CLAUDE.md')).status === 404 && (await fetch(base + '/db/schema.sql')).status === 404);

@@ -3,6 +3,7 @@
     { "source": "/", "destination": "/pro/", "permanent": false },
     { "source": "/transmissao-ao-vivo-pro/:path*", "destination": "/pro/", "permanent": false },
     { "source": "/cursos/:path*", "destination": "/pro/", "permanent": false },
+    { "source": "/consultoria/:path*", "destination": "https://pro.quaddro.com.br/agapemultimidia", "permanent": false },
     { "source": "/admin", "destination": "/admin/", "permanent": false }
   ],
   "headers": [
