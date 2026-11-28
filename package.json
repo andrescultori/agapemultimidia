@@ -1,0 +1,21 @@
+{
+  "name": "agapemultimidia",
+  "private": true,
+  "type": "module",
+  "description": "\u00c1gape Multimidia landing pages and the settings admin (Vercel functions).",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "dev": "node scripts/dev-server.mjs",
+    "build:cf": "node scripts/build-cf.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.6.1",
+    "@electric-sql/pglite-socket": "^0.3.1"
+  },
+  "dependencies": {
+    "postgres": "^4.1.1"
+  }
+}

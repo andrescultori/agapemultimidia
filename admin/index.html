@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Painel · Ágape Multimidia</title>
+<link rel="icon" type="image/png" href="/pro/assets/favicon.png">
+<link rel="preload" href="/pro/assets/fonts/roboto-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:'Archivo';font-weight:800;font-display:swap;src:url('/pro/assets/fonts/archivo-latin-800-normal.woff2') format('woff2')}
+@font-face{font-family:'Roboto';font-weight:400;font-display:swap;src:url('/pro/assets/fonts/roboto-latin-400-normal.woff2') format('woff2')}
+@font-face{font-family:'Roboto';font-weight:700;font-display:swap;src:url('/pro/assets/fonts/roboto-latin-700-normal.woff2') format('woff2')}
+:root{--bg:#121418;--surface:#1A1D23;--deep:#0D0F12;--border:#2A2E37;--text:#F2F4F8;--muted:#A6ADBB;--primary:#436BFF;--tint:#8FA8FF;--err:#FF6B6B;--ok:#4ADE80}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.5 Roboto,system-ui,sans-serif}
+h1,h2{font-family:Archivo,sans-serif;font-weight:800;margin:0}
+h1{font-size:1.5rem}h2{font-size:1.15rem;margin-bottom:4px}
+.wrap{max-width:860px;margin:0 auto;padding:24px 16px 120px}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 12px}
+label{display:block;font-weight:700;font-size:14px;margin:12px 0 4px}
+input,select{width:100%;min-height:44px;padding:8px 12px;background:var(--deep);color:var(--text);border:1px solid var(--border);border-radius:10px;font:inherit}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid var(--tint);outline-offset:2px}
+input[aria-invalid="true"]{border-color:var(--err)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:0 16px}
+.err{color:var(--err);font-size:14px;margin:4px 0 0;min-height:0}
+button{min-height:44px;padding:0 18px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:700 15px Roboto,sans-serif;cursor:pointer}
+button.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+button.link{background:none;border:0;color:var(--tint);text-decoration:underline;min-height:44px;padding:0 8px}
+button:disabled{opacity:.5;cursor:not-allowed}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--deep);border-top:1px solid var(--border);padding:12px 16px;z-index:10}
+.bar .in{max-width:860px;margin:0 auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.bar .grow{flex:1;min-width:160px;color:var(--muted);font-size:14px}
+.chip{display:inline-block;border-radius:999px;padding:2px 10px;font-size:13px;font-weight:700;background:var(--deep);border:1px solid var(--border)}
+.chip.warn{color:#FFE680;border-color:#FFE680}.chip.ok{color:var(--ok);border-color:var(--ok)}
+.calc{font-size:14px;color:var(--muted);margin-top:8px}.calc.bad{color:var(--err)}
+.thumb{width:120px;aspect-ratio:4/5;object-fit:cover;border-radius:10px;border:1px solid var(--border);display:block;margin:8px 0;background:var(--deep)}
+#msg{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:30;max-width:92vw;padding:10px 16px;border-radius:10px;font-weight:700;display:none}
+#msg.show{display:block}#msg.ok{background:#12351f;color:var(--ok);border:1px solid var(--ok)}#msg.bad{background:#3b1717;color:var(--err);border:1px solid var(--err)}
+dialog{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:16px;max-width:min(92vw,620px);width:100%;padding:20px}
+dialog::backdrop{background:rgba(0,0,0,.65)}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:top;overflow-wrap:anywhere}
+tr.price td{background:rgba(255,230,128,.08)}
+.hist li{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);list-style:none}
+ul.hist{padding:0;margin:0}
+.login{max-width:420px;margin:12vh auto 0}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="msg" role="status" aria-live="polite"></div>
+
+<main class="wrap">
+  <!-- LOGIN -->
+  <section id="login" class="login card" hidden>
+    <h1>Painel do site</h1>
+    <p class="hint">Entre com o seu e-mail autorizado. Enviamos um código de 6 dígitos.</p>
+    <form id="f-email">
+      <label for="email">E-mail</label>
+      <input id="email" type="email" autocomplete="email" required>
+      <p style="margin:16px 0 0"><button class="primary" type="submit">Enviar código</button></p>
+    </form>
+    <form id="f-code" hidden>
+      <p class="hint" id="code-hint">Se o e-mail estiver autorizado, o código chega em instantes (vale 10 minutos).</p>
+      <label for="code">Código</label>
+      <input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" pattern="[0-9 ]{6,7}" required>
+      <p style="margin:16px 0 0;display:flex;gap:8px"><button class="primary" type="submit">Entrar</button><button class="link" type="button" id="back">Usar outro e-mail</button></p>
+    </form>
+  </section>
+
+  <!-- EDITOR -->
+  <section id="app" hidden>
+    <div class="top">
+      <div><h1>Painel do site</h1><span class="hint" id="who"></span></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <label for="page" class="hint" style="margin:0">Página</label>
+        <select id="page" style="width:auto"></select>
+        <button type="button" id="logout">Sair</button>
+      </div>
+    </div>
+    <p id="status" class="hint"></p>
+
+    <form id="form" novalidate>
+      <fieldset class="card" style="border:1px solid var(--border)">
+        <legend class="chip">Preços</legend>
+        <p class="hint">Estes valores aparecem em todo o site. Eles precisam bater com o que está configurado no checkout da Kiwify.</p>
+        <div class="grid">
+          <div><label for="p-original">Preço original (R$)</label><input id="p-original" data-f="price.original" inputmode="decimal"><p class="err" data-e="price.original"></p></div>
+          <div><label for="p-cash">Preço à vista (R$)</label><input id="p-cash" data-f="price.cash" inputmode="decimal"><p class="err" data-e="price.cash"></p></div>
+          <div><label for="p-disc">Desconto (%)</label><input id="p-disc" data-f="price.discountPct" inputmode="numeric"><p class="err" data-e="price.discountPct"></p></div>
+          <div><label for="p-n">Parcelas (vezes)</label><input id="p-n" data-f="price.installments" inputmode="numeric"><p class="err" data-e="price.installments"></p></div>
+          <div><label for="p-inst">Valor da parcela (R$)</label><input id="p-inst" data-f="price.installmentValue" inputmode="decimal"><p class="err" data-e="price.installmentValue"></p></div>
+          <div><label for="p-month">"Menos de R$ … por mês" (R$)</label><input id="p-month" data-f="price.monthlyCap" inputmode="decimal"><p class="err" data-e="price.monthlyCap"></p></div>
+        </div>
+        <p class="calc" id="calc" aria-live="polite"></p>
+      </fieldset>
+
+      <fieldset class="card" style="border:1px solid var(--border)">
+        <legend class="chip">Link de compra</legend>
+        <p class="hint">Um único link, usado em todos os botões de compra da página.</p>
+        <label for="buy">Link do checkout (Kiwify)</label><input id="buy" data-f="buyUrl" type="url" inputmode="url"><p class="err" data-e="buyUrl"></p>
+      </fieldset>
+
+      <fieldset class="card" style="border:1px solid var(--border)">
+        <legend class="chip">Números</legend>
+        <div class="grid" id="kpis"></div><p class="err" data-e="kpis"></p>
+      </fieldset>
+
+      <fieldset class="card" style="border:1px solid var(--border)">
+        <legend class="chip">Vídeos</legend>
+        <p class="hint">Cole o link do YouTube (ou só o código do vídeo).</p>
+        <label for="v-hero">Vídeo do topo</label><input id="v-hero" data-f="videos.hero"><p class="err" data-e="videos.hero"></p>
+        <label for="v-t0">Depoimento 1</label><input id="v-t0" data-f="videos.testimonials.0">
+        <label for="v-t1">Depoimento 2</label><input id="v-t1" data-f="videos.testimonials.1">
+        <label for="v-t2">Depoimento 3</label><input id="v-t2" data-f="videos.testimonials.2"><p class="err" data-e="videos.testimonials"></p>
+      </fieldset>
+
+      <fieldset class="card" style="border:1px solid var(--border)">
+        <legend class="chip">Imagem do topo</legend>
+        <p class="hint">Use uma foto vertical (proporção 4:5, por exemplo 1200×1500). JPG, PNG ou WebP, até 4 MB; imagens grandes são reduzidas automaticamente.</p>
+        <img id="thumb" class="thumb" alt="Imagem atual do topo" width="120" height="150">
+        <input id="file" type="file" accept="image/jpeg,image/png,image/webp">
+        <p style="margin:8px 0 0"><button class="link" type="button" id="img-reset">Voltar à imagem original</button></p>
+        <p class="err" data-e="heroImage"></p>
+      </fieldset>
+
+      <fieldset class="card" style="border:1px solid var(--border)">
+        <legend class="chip">Links gerais</legend>
+        <label for="l-yt">YouTube</label><input id="l-yt" data-f="links.youtube" type="url"><p class="err" data-e="links.youtube"></p>
+        <label for="l-ig">Instagram</label><input id="l-ig" data-f="links.instagram" type="url"><p class="err" data-e="links.instagram"></p>
+        <label for="l-fb">Facebook</label><input id="l-fb" data-f="links.facebook" type="url"><p class="err" data-e="links.facebook"></p>
+      </fieldset>
+    </form>
+
+    <section class="card">
+      <h2>Histórico</h2>
+      <p class="hint">Versões publicadas. "Restaurar" cria um rascunho, que você ainda revisa e publica.</p>
+      <ul class="hist" id="hist"></ul>
+    </section>
+  </section>
+</main>
+
+<div class="bar" id="bar" hidden><div class="in">
+  <span class="grow" id="dirty">Nada alterado.</span>
+  <button type="button" id="save">Salvar rascunho</button>
+  <button type="button" id="preview">Pré-visualizar</button>
+  <button type="button" class="primary" id="publish">Publicar…</button>
+</div></div>
+
+<dialog id="dlg" aria-labelledby="dlg-t">
+  <h2 id="dlg-t">Publicar alterações?</h2>
+  <p class="hint">Isto muda o site no ar em até 1 minuto. Confira o que vai mudar:</p>
+  <div style="max-height:50vh;overflow:auto"><table id="diff"><thead><tr><th>Campo</th><th>Antes</th><th>Depois</th></tr></thead><tbody></tbody></table></div>
+  <p id="price-warn" class="calc bad" hidden>Há mudança de preço: confirme que o checkout da Kiwify tem os mesmos valores.</p>
+  <p style="display:flex;gap:8px;justify-content:flex-end;margin:16px 0 0"><button type="button" id="dlg-cancel">Cancelar</button><button type="button" class="primary" id="dlg-ok">Publicar agora</button></p>
+</dialog>
+
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+  var st = null;            // last state from the server
+  var heroImage = null;     // current hero image URL (or null = original)
+  var baseline = '';        // JSON of the form when last loaded/saved
+  var LABELS = { 'price.original': 'Preço original', 'price.cash': 'Preço à vista', 'price.discountPct': 'Desconto (%)', 'price.installments': 'Parcelas', 'price.installmentValue': 'Valor da parcela', 'price.monthlyCap': '"Menos de R$ … por mês"', buyUrl: 'Link de compra', heroImage: 'Imagem do topo', 'videos.hero': 'Vídeo do topo', 'links.youtube': 'YouTube', 'links.instagram': 'Instagram', 'links.facebook': 'Facebook' };
+
+  function toast(text, bad) {
+    var m = $('#msg'); m.textContent = text; m.className = 'show ' + (bad ? 'bad' : 'ok');
+    clearTimeout(toast.t); toast.t = setTimeout(function () { m.className = ''; }, 5000);
+  }
+  function api(action, opt) {
+    opt = opt || {};
+    var init = { method: opt.method || 'GET', credentials: 'same-origin', headers: {} };
+    if (opt.json) { init.headers['Content-Type'] = 'application/json'; init.body = JSON.stringify(opt.json); }
+    if (opt.raw) { init.headers['Content-Type'] = 'application/octet-stream'; init.body = opt.raw; }
+    return fetch('/api/admin/' + action + (opt.qs || ''), init).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, ok: r.ok, json: j }; });
+    });
+  }
+  function get(o, path) { return path.split('.').reduce(function (a, k) { return a == null ? a : a[k]; }, o); }
+  function set(o, path, v) { var k = path.split('.'); var last = k.pop(); var t = k.reduce(function (a, p) { return a[p] = a[p] == null ? {} : a[p]; }, o); t[last] = v; }
+  function show(id) { ['login', 'app'].forEach(function (x) { $('#' + x).hidden = x !== id; }); $('#bar').hidden = id !== 'app'; }
+  var fmt = function (n) { return typeof n === 'number' ? String(n).replace('.', ',') : n; };
+
+  // ---------- form <-> data ----------
+  function fill(d) {
+    $$('[data-f]').forEach(function (el) {
+      var v = get(d, el.getAttribute('data-f'));
+      el.value = v == null ? '' : (el.getAttribute('data-f').indexOf('price.') === 0 && typeof v === 'number' && /original|cash|installmentValue|monthlyCap/.test(el.getAttribute('data-f')) ? v.toFixed(2).replace('.', ',') : v);
+    });
+    var box = $('#kpis'); box.innerHTML = '';
+    d.kpis.forEach(function (k, i) {
+      var w = document.createElement('div'), l = document.createElement('label'), inp = document.createElement('input');
+      l.htmlFor = 'k' + i; l.textContent = d.kpiLabels[i]; inp.id = 'k' + i; inp.value = k; inp.maxLength = 24; inp.setAttribute('data-k', i);
+      w.appendChild(l); w.appendChild(inp); box.appendChild(w);
+    });
+    heroImage = d.heroImage || null;
+    $('#thumb').src = heroImage || '/pro/assets/fabio-hero-640.webp';
+    baseline = JSON.stringify(read()); calc(); dirty();
+  }
+  function read() {
+    var d = { price: {}, videos: { testimonials: [] }, links: {} };
+    $$('[data-f]').forEach(function (el) { set(d, el.getAttribute('data-f'), el.value.trim()); });
+    d.kpis = $$('[data-k]').map(function (el) { return el.value.trim(); });
+    d.heroImage = heroImage;
+    d.kpiLabels = (st && st.defaults.kpiLabels) || [];
+    return d;
+  }
+  function num(s) { s = String(s).trim(); return Number(s.indexOf(',') > -1 ? s.replace(/\./g, '').replace(',', '.') : s); }
+  function calc() {
+    var o = num($('#p-original').value), c = num($('#p-cash').value), n = num($('#p-n').value), i = num($('#p-inst').value), dsc = num($('#p-disc').value);
+    var el = $('#calc'), bad = false, t = [];
+    if (o > 0 && c > 0) { var real = (1 - c / o) * 100; t.push('Desconto calculado: ' + real.toFixed(1).replace('.', ',') + '%'); if (dsc && dsc !== Math.floor(real) && dsc !== Math.round(real)) bad = true; }
+    if (n > 0 && i > 0) { t.push(n + 'x de R$ ' + i.toFixed(2).replace('.', ',') + ' = R$ ' + (n * i).toFixed(2).replace('.', ',')); if (c > 0 && n * i < c) bad = true; }
+    el.textContent = t.join(' · ') + (bad ? ' — confira: os valores não batem.' : ''); el.className = 'calc' + (bad ? ' bad' : '');
+  }
+  function dirty() {
+    var d = JSON.stringify(read()) !== baseline;
+    $('#dirty').textContent = d ? 'Alterações ainda não salvas.' : (st && st.draft ? 'Rascunho salvo, ainda não publicado.' : 'Nada alterado.');
+    return d;
+  }
+  function clearErrors() { $$('[data-e]').forEach(function (e) { e.textContent = ''; }); $$('[aria-invalid]').forEach(function (e) { e.removeAttribute('aria-invalid'); }); }
+  function showErrors(list) {
+    clearErrors();
+    (list || []).forEach(function (e) {
+      var p = document.querySelector('[data-e="' + e.field + '"]'); if (p) p.textContent = e.message;
+      var inp = document.querySelector('[data-f="' + e.field + '"]'); if (inp) inp.setAttribute('aria-invalid', 'true');
+    });
+    var first = document.querySelector('[aria-invalid="true"]') || (list && list[0] && document.querySelector('[data-e="' + list[0].field + '"]'));
+    if (first) first.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  // ---------- state ----------
+  function render() {
+    var cur = st.draft || st.published;
+    var d = cur ? cur.data : st.defaults;
+    fill(d);
+    var s = st.published ? 'Publicado em ' + new Date(st.published.createdAt).toLocaleString('pt-BR') + ' por ' + st.published.createdBy + '.' : 'Ainda não publicado pelo painel: o site mostra os valores originais.';
+    $('#status').textContent = s + (st.draft ? ' Você tem um rascunho salvo.' : '');
+    var h = $('#hist'); h.innerHTML = '';
+    st.history.forEach(function (v) {
+      var li = document.createElement('li'), sp = document.createElement('span'), b = document.createElement('button');
+      sp.textContent = new Date(v.createdAt).toLocaleString('pt-BR') + ' · ' + v.createdBy + (v.note ? ' · ' + v.note : '');
+      b.className = 'link'; b.type = 'button'; b.textContent = 'Restaurar'; b.addEventListener('click', function () { restore(v.id); });
+      li.appendChild(sp); li.appendChild(b); h.appendChild(li);
+    });
+    if (!h.children.length) { var li = document.createElement('li'); li.textContent = 'Nenhuma publicação ainda.'; h.appendChild(li); }
+  }
+  function load(page) {
+    return api('state', { qs: '?page=' + encodeURIComponent(page || 'pro') }).then(function (r) {
+      if (r.status === 401) { show('login'); return false; }
+      if (!r.ok) { toast('Não foi possível carregar.', true); return false; }
+      st = r.json;
+      var sel = $('#page'); sel.innerHTML = '';
+      Object.keys(st.pages).forEach(function (k) { var o = document.createElement('option'); o.value = k; o.textContent = st.pages[k]; sel.appendChild(o); });
+      sel.value = st.page; show('app'); render(); return true;
+    });
+  }
+  function saveDraft() {
+    return api('draft', { method: 'PUT', json: { page: st.page, data: read() } }).then(function (r) {
+      if (r.status === 401) { show('login'); return false; }
+      if (r.status === 422) { showErrors(r.json.errors); toast('Corrija os campos marcados.', true); return false; }
+      if (!r.ok) { toast('Erro ao salvar. Tente de novo.', true); return false; }
+      clearErrors(); st = r.json; var keepImg = heroImage; render(); heroImage = keepImg; toast('Rascunho salvo.'); return true;
+    });
+  }
+  function restore(id) {
+    if (dirty() && !confirm('Há alterações não salvas. Restaurar mesmo assim?')) return;
+    api('restore', { method: 'POST', json: { page: st.page, versionId: id } }).then(function (r) {
+      if (!r.ok) return toast('Não foi possível restaurar.', true);
+      st = r.json; render(); toast('Versão restaurada como rascunho. Revise e publique.');
+    });
+  }
+
+  // ---------- diff + publish ----------
+  function flat(o, p, out) {
+    out = out || {};
+    Object.keys(o || {}).forEach(function (k) {
+      var v = o[k], key = p ? p + '.' + k : k;
+      if (v && typeof v === 'object') flat(v, key, out); else out[key] = v;   // objects and arrays both expand
+    });
+    return out;
+  }
+  function label(f) {
+    if (LABELS[f]) return LABELS[f];
+    var m = /^kpis\.(\d)$/.exec(f); if (m) return 'Número ' + (+m[1] + 1) + ' (' + ((st.defaults.kpiLabels || [])[+m[1]] || '') + ')';
+    m = /^videos\.testimonials\.(\d)$/.exec(f); if (m) return 'Depoimento ' + (+m[1] + 1);
+    return f;
+  }
+  function show_(f, v) {
+    if (v == null || v === '') return '—';
+    if (/^price\.(original|cash|installmentValue|monthlyCap)$/.test(f)) return 'R$ ' + Number(v).toFixed(2).replace('.', ',');
+    if (f === 'price.discountPct') return v + '%';
+    if (f === 'price.installments') return v + 'x';
+    return String(v);
+  }
+  function changes() {
+    var a = flat((st.published ? st.published.data : st.defaults)), b = flat(st.draft.data), out = [];
+    Object.keys(b).forEach(function (k) { if (k !== 'kpiLabels' && JSON.stringify(a[k]) !== JSON.stringify(b[k])) out.push({ f: k, from: a[k], to: b[k] }); });
+    return out;
+  }
+  function openPublish() {
+    saveDraft().then(function (ok) {
+      if (!ok) return;
+      var c = changes(), tb = $('#diff tbody'); tb.innerHTML = '';
+      if (!c.length) { toast('Nada mudou em relação ao site publicado.'); return; }
+      var price = false;
+      c.forEach(function (x) {
+        var tr = document.createElement('tr'); if (x.f.indexOf('price.') === 0) { tr.className = 'price'; price = true; }
+        [label(x.f), show_(x.f, x.from), show_(x.f, x.to)].forEach(function (t) { var td = document.createElement('td'); td.textContent = String(t); tr.appendChild(td); });
+        tb.appendChild(tr);
+      });
+      $('#price-warn').hidden = !price;
+      $('#dlg').showModal(); $('#dlg-cancel').focus();
+    });
+  }
+
+  // ---------- events ----------
+  $('#f-email').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var btn = e.target.querySelector('button'); btn.disabled = true;
+    api('otp-request', { method: 'POST', json: { email: $('#email').value } }).then(function () {
+      btn.disabled = false; $('#f-email').hidden = true; $('#f-code').hidden = false; $('#code').focus();
+    });
+  });
+  $('#back').addEventListener('click', function () { $('#f-code').hidden = true; $('#f-email').hidden = false; $('#email').focus(); });
+  $('#f-code').addEventListener('submit', function (e) {
+    e.preventDefault();
+    api('otp-verify', { method: 'POST', json: { email: $('#email').value, code: $('#code').value } }).then(function (r) {
+      if (!r.ok) { toast('Código inválido ou expirado.', true); return; }
+      $('#code').value = ''; api('me').then(function (m) { $('#who').textContent = m.json.email || ''; return load('pro'); });
+    });
+  });
+  $('#logout').addEventListener('click', function () { api('logout', { method: 'POST', json: {} }).then(function () { st = null; show('login'); $('#f-code').hidden = true; $('#f-email').hidden = false; }); });
+  $('#page').addEventListener('change', function () { load(this.value); });
+  $('#form').addEventListener('input', function () { calc(); dirty(); });
+  $('#form').addEventListener('submit', function (e) { e.preventDefault(); });
+  $('#save').addEventListener('click', saveDraft);
+  $('#preview').addEventListener('click', function () {
+    var w = window.open('', '_blank');
+    saveDraft().then(function (ok) { if (ok && w) w.location = '/' + st.page + '/?preview=draft'; else if (w) w.close(); });
+  });
+  $('#publish').addEventListener('click', openPublish);
+  $('#dlg-cancel').addEventListener('click', function () { $('#dlg').close(); });
+  $('#dlg-ok').addEventListener('click', function () {
+    var b = this; b.disabled = true;
+    api('publish', { method: 'POST', json: { page: st.page } }).then(function (r) {
+      b.disabled = false; $('#dlg').close();
+      if (!r.ok) { if (r.json && r.json.errors) showErrors(r.json.errors); return toast((r.json && r.json.message) || 'Não foi possível publicar.', true); }
+      st = r.json; render(); toast('Publicado. O site atualiza em até 1 minuto.');
+    });
+  });
+  $('#img-reset').addEventListener('click', function () { heroImage = null; $('#thumb').src = '/pro/assets/fabio-hero-640.webp'; dirty(); });
+  $('#file').addEventListener('change', function () {
+    var f = this.files[0]; if (!f) return;
+    resize(f).then(function (blob) { return api('upload', { method: 'POST', raw: blob }); }).then(function (r) {
+      if (!r.ok) { toast((r.json && r.json.message) || 'Não foi possível enviar a imagem.', true); return; }
+      heroImage = r.json.url; $('#thumb').src = heroImage; dirty(); toast('Imagem enviada. Salve o rascunho para guardar.');
+    }).catch(function () { toast('Não foi possível ler essa imagem.', true); });
+    this.value = '';
+  });
+  function resize(file) {
+    return new Promise(function (resolve, reject) {
+      if (file.size <= 700 * 1024 && /webp$/.test(file.type)) return resolve(file);
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        var max = 1600, s = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas');
+        c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+        c.toBlob(function (b) { b ? resolve(b) : reject(); }, 'image/webp', 0.85);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(); };
+      img.src = url;
+    });
+  }
+  window.addEventListener('beforeunload', function (e) { if (st && !$('#app').hidden && dirty()) { e.preventDefault(); e.returnValue = ''; } });
+
+  api('me').then(function (r) {
+    if (r.ok) { $('#who').textContent = r.json.email; return load('pro'); }
+    show('login'); $('#email').focus();
+  });
+})();
+</script>
+</body>
+</html>

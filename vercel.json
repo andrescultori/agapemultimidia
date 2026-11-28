@@ -2,6 +2,23 @@
   "redirects": [
     { "source": "/", "destination": "/pro/", "permanent": false },
     { "source": "/transmissao-ao-vivo-pro", "destination": "/pro/", "permanent": false },
-    { "source": "/cursos", "destination": "/pro/", "permanent": false }
+    { "source": "/cursos", "destination": "/pro/", "permanent": false },
+    { "source": "/admin", "destination": "/admin/", "permanent": false }
+  ],
+  "headers": [
+    {
+      "source": "/admin/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Referrer-Policy", "value": "no-referrer" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'" }
+      ]
+    },
+    {
+      "source": "/shared/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=300" }]
+    }
   ]
 }

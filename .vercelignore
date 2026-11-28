@@ -1,0 +1,11 @@
+# Not part of the public site. Static files are served as-is, so keep docs, tests, SQL and tooling out of the deploy.
+*.md
+.claude
+.impeccable
+.env.example
+db
+test
+scripts
+hostgator
+functions
+wrangler.toml
