@@ -15,13 +15,15 @@ export default async function handler(req, res) {
   try {
     if (url.searchParams.get('draft') === '1' && (await sessionEmail(req))) {
       const [draft] = await query(`select id, data from agape_admin.settings_versions where page = $1 and status = 'draft'`, [page]);
-      if (draft) return send(res, 200, { page, version: Number(draft.id), draft: true, data: draft.data }, { 'Cache-Control': 'no-store' });
+      if (draft) return send(res, 200, { page, version: Number(draft.id), draft: true, data: draft.data }, { 'Cache-Control': 'no-store', 'X-Settings-Source': 'draft' });
     }
     const [pub] = await query(`select id, data from agape_admin.settings_versions where page = $1 and status = 'published' order by id desc limit 1`, [page]);
     const body = pub ? { page, version: Number(pub.id), data: pub.data } : fallback;
-    return send(res, 200, body, { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=600' });
-  } catch {
-    // Database down: the pages keep working with the built-in values.
-    return send(res, 200, fallback, { 'Cache-Control': 'public, s-maxage=10' });
+    return send(res, 200, body, { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=600', 'X-Settings-Source': pub ? 'db' : 'defaults-no-published-row' });
+  } catch (err) {
+    // Database down: the pages keep working with the built-in values. Log it so a silent fallback is visible
+    // (Worker logs / Vercel logs) and tag the response; the message never goes to the client.
+    console.error('settings read failed:', err?.message || err);
+    return send(res, 200, fallback, { 'Cache-Control': 'public, s-maxage=10', 'X-Settings-Source': 'defaults-db-error' });
   }
 }
