@@ -3,6 +3,7 @@ import { query } from '../_lib/db.js';
 import { send, jsonBody, rawBody, sameOrigin, clientIp } from '../_lib/http.js';
 import { PAGES, isPage, validate, diff } from '../_lib/settings.js';
 import { putImage } from '../_lib/storage.js';
+import { listAdmins, addAdmin, updateAdmin, removeAdmin } from '../_lib/admins.js';
 import { requestOtp, verifyOtp, sessionEmail, endSession, sessionCookie, clearCookie } from '../_lib/auth.js';
 
 
@@ -76,6 +77,20 @@ export default async function handler(req, res) {
       const name = `hero/${createHash('sha256').update(buf).digest('hex').slice(0, 12)}.${type[1]}`;
       const url = await putImage(name, buf, type[0]);
       return send(res, 200, { url }, noStore);
+    }
+
+    // ---- admin management (any logged-in admin; owners from ADMIN_EMAILS are never touched) ----
+    if (action.startsWith('admins-')) {
+      const methods = { 'admins-list': 'GET', 'admins-add': 'POST', 'admins-update': 'PUT', 'admins-remove': 'POST' };
+      if (!methods[action]) return send(res, 404, { error: 'not_found' }, noStore);
+      if (req.method !== methods[action]) return send(res, 405, { error: 'method_not_allowed' }, { ...noStore, Allow: methods[action] });
+      const input = jsonBody(req) || {};
+      const out =
+        action === 'admins-list' ? { status: 200, body: await listAdmins(email) }
+        : action === 'admins-add' ? await addAdmin(email, input)
+        : action === 'admins-update' ? await updateAdmin(email, input)
+        : await removeAdmin(email, input);
+      return send(res, out.status, out.body, noStore);
     }
 
     const body = jsonBody(req) || {};

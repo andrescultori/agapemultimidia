@@ -46,6 +46,14 @@ tr.price td{background:rgba(255,230,128,.08)}
 .hist li{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);list-style:none}
 ul.hist{padding:0;margin:0}
 .login{max-width:420px;margin:12vh auto 0}
+.adm{list-style:none;padding:0;margin:12px 0}
+.adm li{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.adm .who{min-width:0;flex:1 1 220px;overflow-wrap:anywhere}
+.adm .nm{font-weight:700}.adm .em{color:var(--muted);font-size:14px}.adm .meta{color:var(--muted);font-size:13px}
+.adm .act{display:flex;gap:4px;flex-wrap:wrap}
+.adm .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+h3{font-family:Archivo,sans-serif;font-weight:800;font-size:1rem;margin:20px 0 0}
+#adm{max-height:92vh;overflow:auto}
 [hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -75,9 +83,10 @@ ul.hist{padding:0;margin:0}
   <section id="app" hidden>
     <div class="top">
       <div><h1>Painel do site</h1><span class="hint" id="who"></span></div>
-      <div style="display:flex;gap:8px;align-items:center">
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
         <label for="page" class="hint" style="margin:0">Página</label>
         <select id="page" style="width:auto"></select>
+        <button type="button" id="adm-open">Administradores</button>
         <button type="button" id="logout">Sair</button>
       </div>
     </div>
@@ -156,6 +165,33 @@ ul.hist{padding:0;margin:0}
   <div style="max-height:50vh;overflow:auto"><table id="diff"><thead><tr><th>Campo</th><th>Antes</th><th>Depois</th></tr></thead><tbody></tbody></table></div>
   <p id="price-warn" class="calc bad" hidden>Há mudança de preço: confirme que o checkout da Kiwify tem os mesmos valores.</p>
   <p style="display:flex;gap:8px;justify-content:flex-end;margin:16px 0 0"><button type="button" id="dlg-cancel">Cancelar</button><button type="button" class="primary" id="dlg-ok">Publicar agora</button></p>
+</dialog>
+
+<dialog id="adm" aria-labelledby="adm-t">
+  <h2 id="adm-t">Administradores</h2>
+  <p class="hint">Quem pode entrar neste painel. Os administradores marcados como "Protegido" vêm da configuração do servidor e não podem ser alterados aqui. Qualquer administrador pode adicionar, editar e remover os outros.</p>
+  <p id="adm-off" class="calc bad" hidden>A lista de administradores ainda não foi ativada no banco de dados. Por enquanto só os administradores protegidos conseguem entrar.</p>
+  <ul class="adm" id="adm-list"></ul>
+  <form id="adm-form" novalidate>
+    <h3 id="adm-form-t">Adicionar administrador</h3>
+    <p class="hint" id="adm-form-h">A pessoa recebe o código de acesso por e-mail quando for entrar.</p>
+    <label for="adm-email">E-mail</label>
+    <input id="adm-email" type="email" autocomplete="off" maxlength="254" required>
+    <label for="adm-name">Nome (opcional)</label>
+    <input id="adm-name" autocomplete="off" maxlength="80" placeholder="Ex.: Fábio, cliente">
+    <p class="err" id="adm-err" role="alert"></p>
+    <p style="display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 0">
+      <button class="primary" type="submit" id="adm-save">Adicionar</button>
+      <button type="button" id="adm-cancel-edit" hidden>Cancelar edição</button>
+      <button type="button" id="adm-close" style="margin-left:auto">Fechar</button>
+    </p>
+  </form>
+</dialog>
+
+<dialog id="cfm" aria-labelledby="cfm-t">
+  <h2 id="cfm-t"></h2>
+  <p class="hint" id="cfm-p"></p>
+  <p style="display:flex;gap:8px;justify-content:flex-end;margin:16px 0 0"><button type="button" id="cfm-no">Cancelar</button><button type="button" class="primary" id="cfm-yes">Remover</button></p>
 </dialog>
 
 <script>
@@ -376,6 +412,101 @@ ul.hist{padding:0;margin:0}
       img.src = url;
     });
   }
+  // ---------- administradores ----------
+  var adm = null;        // last { me, owners, admins } from the server
+  var admEditing = null; // admin being edited, or null when adding
+  function admChip(text, cls) { var c = document.createElement('span'); c.className = 'chip' + (cls ? ' ' + cls : ''); c.textContent = text; return c; }
+  function admErr(msg, field) {
+    $('#adm-err').textContent = msg || '';
+    ['adm-email', 'adm-name'].forEach(function (id) { $('#' + id).removeAttribute('aria-invalid'); });
+    if (msg && (field === 'email' || field === 'name')) $('#adm-' + field).setAttribute('aria-invalid', 'true');
+  }
+  function admReset() {
+    admEditing = null; admErr('');
+    $('#adm-email').value = ''; $('#adm-name').value = ''; $('#adm-email').disabled = false;
+    $('#adm-form-t').textContent = 'Adicionar administrador';
+    $('#adm-form-h').textContent = 'A pessoa recebe o código de acesso por e-mail quando for entrar.';
+    $('#adm-save').textContent = 'Adicionar'; $('#adm-cancel-edit').hidden = true;
+  }
+  function admEdit(a) {
+    admEditing = a; admErr('');
+    var mine = a.email === adm.me;
+    $('#adm-email').value = a.email; $('#adm-name').value = a.name || ''; $('#adm-email').disabled = mine;
+    $('#adm-form-t').textContent = 'Editar administrador';
+    $('#adm-form-h').textContent = mine ? 'Você pode mudar o seu nome, mas não o seu e-mail (isso encerraria a sua sessão).' : 'Se mudar o e-mail, a pessoa será desconectada e entra de novo com um código enviado ao novo endereço.';
+    $('#adm-save').textContent = 'Salvar'; $('#adm-cancel-edit').hidden = false;
+    $('#adm-name').focus();
+  }
+  function admRender() {
+    var ul = $('#adm-list'); ul.innerHTML = '';
+    $('#adm-off').hidden = !adm.unavailable;
+    adm.owners.forEach(function (email) {
+      var li = document.createElement('li'), who = document.createElement('div'), em = document.createElement('div'), chips = document.createElement('div');
+      who.className = 'who'; em.className = 'nm'; em.textContent = email; chips.className = 'chips';
+      chips.appendChild(admChip('Protegido', 'ok')); if (email === adm.me) chips.appendChild(admChip('Você'));
+      who.appendChild(em); who.appendChild(chips); li.appendChild(who); ul.appendChild(li);
+    });
+    adm.admins.forEach(function (a) {
+      var li = document.createElement('li'), who = document.createElement('div'), nm = document.createElement('div'), em = document.createElement('div'), meta = document.createElement('div'), act = document.createElement('div');
+      who.className = 'who'; nm.className = 'nm'; nm.textContent = a.name || a.email;
+      who.appendChild(nm);
+      if (a.name) { em.className = 'em'; em.textContent = a.email; who.appendChild(em); }
+      if (a.email === adm.me) { var ch = document.createElement('div'); ch.className = 'chips'; ch.appendChild(admChip('Você')); who.appendChild(ch); }
+      meta.className = 'meta'; meta.textContent = 'Adicionado por ' + a.createdBy + ' em ' + new Date(a.createdAt).toLocaleDateString('pt-BR');
+      who.appendChild(meta);
+      act.className = 'act';
+      var e = document.createElement('button'); e.type = 'button'; e.className = 'link'; e.textContent = 'Editar'; e.addEventListener('click', function () { admEdit(a); });
+      act.appendChild(e);
+      if (a.email !== adm.me) {
+        var r = document.createElement('button'); r.type = 'button'; r.className = 'link'; r.textContent = 'Remover'; r.addEventListener('click', function () { admAskRemove(a); });
+        act.appendChild(r);
+      }
+      li.appendChild(who); li.appendChild(act); ul.appendChild(li);
+    });
+    if (!adm.admins.length && !adm.unavailable) { var empty = document.createElement('li'); empty.textContent = 'Nenhum outro administrador ainda.'; ul.appendChild(empty); }
+  }
+  function admLoad() {
+    return api('admins-list').then(function (r) {
+      if (r.status === 401) { $('#adm').close(); show('login'); return false; }
+      if (!r.ok) { toast('Não foi possível carregar os administradores.', true); return false; }
+      adm = r.json; admRender(); return true;
+    });
+  }
+  function admAskRemove(a) {
+    $('#cfm-t').textContent = 'Remover administrador?';
+    $('#cfm-p').textContent = (a.name ? a.name + ' (' + a.email + ')' : a.email) + ' não poderá mais entrar no painel e a sessão aberta será encerrada agora.';
+    $('#cfm-yes').onclick = function () {
+      var b = this; b.disabled = true;
+      api('admins-remove', { method: 'POST', json: { id: a.id } }).then(function (r) {
+        b.disabled = false; $('#cfm').close();
+        if (r.status === 401) { $('#adm').close(); show('login'); return; }
+        if (!r.ok) return toast((r.json && r.json.message) || 'Não foi possível remover.', true);
+        adm = r.json; if (admEditing && admEditing.id === a.id) admReset(); admRender(); toast('Administrador removido.');
+      });
+    };
+    $('#cfm').showModal(); $('#cfm-no').focus();
+  }
+  $('#adm-open').addEventListener('click', function () { admReset(); $('#adm').showModal(); admLoad().then(function () { $('#adm-email').focus(); }); });
+  $('#adm-close').addEventListener('click', function () { $('#adm').close(); });
+  $('#cfm-no').addEventListener('click', function () { $('#cfm').close(); });
+  $('#adm-cancel-edit').addEventListener('click', function () { admReset(); $('#adm-email').focus(); });
+  $('#adm-form').addEventListener('submit', function (e) {
+    e.preventDefault(); admErr('');
+    var email = $('#adm-email').value.trim(), name = $('#adm-name').value, editing = admEditing, btn = $('#adm-save');
+    if (!editing && !email) return admErr('Informe o e-mail.', 'email');
+    var req = editing
+      ? api('admins-update', { method: 'PUT', json: Object.assign({ id: editing.id, name: name }, editing.email === adm.me ? {} : { email: email }) })
+      : api('admins-add', { method: 'POST', json: { email: email, name: name } });
+    btn.disabled = true;
+    req.then(function (r) {
+      btn.disabled = false;
+      if (r.status === 401) { $('#adm').close(); show('login'); return; }
+      if (!r.ok) return admErr((r.json && r.json.message) || 'Não foi possível salvar. Tente de novo.', r.json && r.json.field);
+      adm = r.json; admReset(); admRender(); toast(editing ? 'Administrador atualizado.' : 'Administrador adicionado.');
+      $('#adm-email').focus();
+    });
+  });
+
   window.addEventListener('beforeunload', function (e) { if (st && !$('#app').hidden && dirty()) { e.preventDefault(); e.returnValue = ''; } });
 
   api('me').then(function (r) {

@@ -5,7 +5,7 @@ Website and landing pages for Ágape Multimidia (live-streaming courses and cons
 
 ## Stack
 - Frontend: static HTML + inline CSS + a little inline JS, no framework. `/pro/` loads `shared/site-settings.js`, which swaps prices, buy link, KPIs, videos, hero image and links with the values published in the admin (the HTML keeps the same values as fallback). Build step only for Cloudflare (`npm run build:cf` → `dist/`).
-- Admin (see ADMIN.md): handlers in `api/`, run as a Cloudflare Worker (`src/worker.js`) or as Vercel Functions, Supabase (schema `agape_admin` + bucket `site-images`), Resend. Stores only the two admin emails, login codes (hashed), sessions and settings versions. The public pages collect no visitor data.
+- Admin (see ADMIN.md): handlers in `api/`, run as a Cloudflare Worker (`src/worker.js`) or as Vercel Functions, Supabase (schema `agape_admin` + bucket `site-images`), Resend. Stores admin emails (protected owners in `ADMIN_EMAILS` plus the `agape_admin.admins` table managed in `/admin/` → Administradores), login codes (hashed), sessions and settings versions. The public pages collect no visitor data.
 - Checkout: Kiwify (external link `pay.kiwify.com.br`).
 - Video: YouTube embeds through `youtube-nocookie.com`.
 - Hosting: Vercel project `agapemultimidia` (team AMS, `ams-de94`) auto-deploys `main` and builds a preview per PR. The official domain still serves from HostGator (manual upload). Target: Cloudflare Workers with static assets (client's Cloudflare account). DNS stays at Registro.br nameservers → Cloudflare. HostGator/WordPress goes away at the cutover; the `hostgator/` redirect file is obsolete after that. See ADMIN.md for the cutover steps.
