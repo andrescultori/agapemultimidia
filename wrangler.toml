@@ -13,8 +13,15 @@ binding = "ASSETS"
 # Only /api/* runs the Worker; everything else is served straight from the static assets.
 run_worker_first = ["/api/*"]
 
-# Stored logs (Worker > Observability > Logs). Without this block, a deploy resets the dashboard toggle and
-# console.error output (e.g. "otp request failed") is only visible in a live tail.
+# Observability: same values Cloudflare shows when you enable logs in the dashboard. Keeping them here stops a deploy
+# from resetting the toggle. (Cloudflare also lists issue_detection = false; this Wrangler version rejects it, and it is off by default.) Logs: Worker > Observability. console.error output (e.g. "otp request failed") appears there.
 [observability.logs]
 enabled = true
+head_sampling_rate = 1
 invocation_logs = true
+persist = true
+
+[observability.traces]
+enabled = false
+head_sampling_rate = 1
+persist = true
