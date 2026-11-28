@@ -14,10 +14,10 @@ export default async function handler(req, res) {
 
   try {
     if (url.searchParams.get('draft') === '1' && (await sessionEmail(req))) {
-      const [draft] = await query(`select id, data from settings_versions where page = $1 and status = 'draft'`, [page]);
+      const [draft] = await query(`select id, data from agape_admin.settings_versions where page = $1 and status = 'draft'`, [page]);
       if (draft) return send(res, 200, { page, version: Number(draft.id), draft: true, data: draft.data }, { 'Cache-Control': 'no-store' });
     }
-    const [pub] = await query(`select id, data from settings_versions where page = $1 and status = 'published' order by id desc limit 1`, [page]);
+    const [pub] = await query(`select id, data from agape_admin.settings_versions where page = $1 and status = 'published' order by id desc limit 1`, [page]);
     const body = pub ? { page, version: Number(pub.id), data: pub.data } : fallback;
     return send(res, 200, body, { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=600' });
   } catch {

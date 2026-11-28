@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshDb, mailbox, call, login } from './helpers.js';
-import admin, { setBlob } from '../api/admin/[action].js';
+import admin from '../api/admin/[action].js';
+import { setStorage } from '../api/_lib/storage.js';
 import settings from '../api/settings.js';
 import { PAGES } from '../api/_lib/settings.js';
 
@@ -73,10 +74,10 @@ test('draft -> preview -> publish -> public read, with history and restore', asy
   assert.equal((await S()).json.data.price.cash, 99.9, 'restore only creates a draft');
 });
 
-test('upload: type sniffing, size limit, blob url', async () => {
+test('upload: type sniffing, size limit, storage url', async () => {
   await freshDb(); const sent = mailbox();
   const c = await login(admin, sent);
-  setBlob(async (name) => ({ url: `https://abc.public.blob.vercel-storage.com/${name}` }));
+  setStorage(async (name) => `https://abc.supabase.co/storage/v1/object/public/site-images/${name}`);
   const png = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(32)]);
   const ok = await A('upload', { method: 'POST', headers: { cookie: c }, body: png });
   assert.equal(ok.status, 200); assert.match(ok.json.url, /hero\/[0-9a-f]{12}\.png$/);

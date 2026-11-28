@@ -5,7 +5,7 @@ Website and landing pages for Ágape Multimidia (live-streaming courses and cons
 
 ## Stack
 - Frontend: static HTML + inline CSS + a little inline JS. No build step, no framework.
-- Admin (see ADMIN.md): Vercel Functions in `api/`, Neon Postgres, Vercel Blob, Resend. Stores only the two admin emails, login codes (hashed), sessions and settings versions. The public pages collect no visitor data.
+- Admin (see ADMIN.md): Vercel Functions in `api/` (Cloudflare adapter in `functions/`), Supabase (schema `agape_admin` + bucket `site-images`), Resend. Stores only the two admin emails, login codes (hashed), sessions and settings versions. The public pages collect no visitor data.
 - Checkout: Kiwify (external link `pay.kiwify.com.br`).
 - Video: YouTube embeds through `youtube-nocookie.com`.
 - Hosting: Vercel (the admin needs it). HostGator/WordPress may still serve other parts of the domain; the `hostgator/` redirect file is only for that case. TODO(André): confirm how the repo deploys to Vercel and where DNS is managed.

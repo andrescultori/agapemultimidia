@@ -20,9 +20,10 @@ setDb(async (t, p) => (await pg.query(t, p)).rows);
 setMailer(async (to, code) => console.log(`\n  [dev] login code for ${to}: ${code}\n`));
 
 const { default: settings } = await import('../api/settings.js');
-const { default: admin, setBlob } = await import('../api/admin/[action].js');
+const { default: admin } = await import('../api/admin/[action].js');
+const { setStorage } = await import('../api/_lib/storage.js');
 const uploads = new Map();
-setBlob(async (name, buf, o) => { uploads.set('/__blob/' + name, { buf, type: o.contentType }); return { url: `http://127.0.0.1:${port}/__blob/${name}` }; });
+setStorage(async (name, buf, type) => { uploads.set('/__img/' + name, { buf, type }); return `http://127.0.0.1:${port}/__img/${name}`; });
 
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.woff2': 'font/woff2', '.txt': 'text/plain' };
 const chunks = (req) => new Promise((r) => { const c = []; req.on('data', (d) => c.push(d)); req.on('end', () => r(Buffer.concat(c))); });

@@ -1,3 +1,5 @@
+import { isOwnImage } from './storage.js';
+
 // Editable settings per page: defaults (identical to the fallback text in each HTML page), validation, diff.
 
 export const PAGES = {
@@ -119,9 +121,9 @@ export function validate(page, input) {
 
   let heroImage = null;
   if (i.heroImage !== null && i.heroImage !== undefined && i.heroImage !== '') {
-    heroImage = httpsUrl(i.heroImage, ['public.blob.vercel-storage.com']);
-    // Local dev server only (scripts/dev-server.mjs keeps uploads in memory); never true on Vercel.
-    if (!heroImage && process.env.NODE_ENV === 'development' && /^http:\/\/127\.0\.0\.1:\d+\/__blob\/hero\/[\w.-]+$/.test(String(i.heroImage))) heroImage = String(i.heroImage);
+    heroImage = isOwnImage(i.heroImage) ? String(i.heroImage) : null;
+    // Local dev server only (scripts/dev-server.mjs keeps uploads in memory); never true in production.
+    if (!heroImage && process.env.NODE_ENV === 'development' && /^http:\/\/127\.0\.0\.1:\d+\/__img\/hero\/[\w.-]+$/.test(String(i.heroImage))) heroImage = String(i.heroImage);
     if (!heroImage) err('heroImage', 'Imagem inválida: envie o arquivo pelo painel.');
   }
 

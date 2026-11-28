@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+process.env.SUPABASE_URL = 'https://abc.supabase.co';
 import { PAGES, validate, youtubeId, diff } from '../api/_lib/settings.js';
 
 const base = () => structuredClone(PAGES.pro.defaults);
@@ -52,9 +53,11 @@ test('youtube ids from urls', () => {
 });
 
 test('social links and image host are restricted', () => {
+  const other = base(); other.heroImage = 'https://abc.supabase.co/storage/v1/object/public/other-bucket/hero/a.webp';
+  assert.deepEqual(fields(validate('pro', other)), ['heroImage']);
   const d = base(); d.links.instagram = 'https://evil.com/x'; d.heroImage = 'https://evil.com/a.jpg';
   assert.deepEqual(fields(validate('pro', d)).sort(), ['heroImage', 'links.instagram']);
-  const ok = base(); ok.heroImage = 'https://abc123.public.blob.vercel-storage.com/hero/a.webp';
+  const ok = base(); ok.heroImage = 'https://abc.supabase.co/storage/v1/object/public/site-images/hero/a.webp';
   assert.equal(validate('pro', ok).ok, true);
 });
 

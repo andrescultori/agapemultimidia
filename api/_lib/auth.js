@@ -32,12 +32,12 @@ export function allowed(email) {
 export async function requestOtp(emailRaw, ip) {
   const email = normEmail(emailRaw);
   if (!email || !allowed(email)) return false;
-  const [byEmail] = await query(`select count(*)::int as n from otp_codes where email = $1 and created_at > now() - interval '15 minutes'`, [email]);
-  const [byIp] = await query(`select count(*)::int as n from otp_codes where ip_hash = $1 and created_at > now() - interval '1 hour'`, [hash(ip)]);
+  const [byEmail] = await query(`select count(*)::int as n from agape_admin.otp_codes where email = $1 and created_at > now() - interval '15 minutes'`, [email]);
+  const [byIp] = await query(`select count(*)::int as n from agape_admin.otp_codes where ip_hash = $1 and created_at > now() - interval '1 hour'`, [hash(ip)]);
   if (byEmail.n >= 3 || byIp.n >= 10) return false;
   const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
   await query(
-    `insert into otp_codes (email, code_hash, ip_hash, expires_at) values ($1, $2, $3, now() + ($4 || ' minutes')::interval)`,
+    `insert into agape_admin.otp_codes (email, code_hash, ip_hash, expires_at) values ($1, $2, $3, now() + ($4 || ' minutes')::interval)`,
     [email, hash(`${email}:${code}`), hash(ip), String(OTP_TTL_MIN)],
   );
   await sendOtpEmail(email, code);
@@ -52,17 +52,17 @@ export async function verifyOtp(emailRaw, codeRaw) {
   const code = typeof codeRaw === 'string' ? codeRaw.replace(/\s/g, '') : '';
   if (!email || !/^\d{6}$/.test(code) || !allowed(email)) return null;
   const [row] = await query(
-    `select id, code_hash, attempts from otp_codes where email = $1 and used_at is null and expires_at > now() order by id desc limit 1`,
+    `select id, code_hash, attempts from agape_admin.otp_codes where email = $1 and used_at is null and expires_at > now() order by id desc limit 1`,
     [email],
   );
   if (!row || row.attempts >= MAX_ATTEMPTS) return null;
-  await query(`update otp_codes set attempts = attempts + 1 where id = $1`, [row.id]);
+  await query(`update agape_admin.otp_codes set attempts = attempts + 1 where id = $1`, [row.id]);
   if (!safeEq(row.code_hash, hash(`${email}:${code}`))) return null;
-  await query(`update otp_codes set used_at = now() where id = $1`, [row.id]);
+  await query(`update agape_admin.otp_codes set used_at = now() where id = $1`, [row.id]);
   const token = randomBytes(32).toString('base64url');
-  await query(`insert into sessions (token_hash, email, expires_at) values ($1, $2, now() + ($3 || ' hours')::interval)`, [hash(token), email, String(SESSION_TTL_H)]);
-  await query(`delete from sessions where expires_at < now()`);
-  await query(`delete from otp_codes where created_at < now() - interval '1 day'`);
+  await query(`insert into agape_admin.sessions (token_hash, email, expires_at) values ($1, $2, now() + ($3 || ' hours')::interval)`, [hash(token), email, String(SESSION_TTL_H)]);
+  await query(`delete from agape_admin.sessions where expires_at < now()`);
+  await query(`delete from agape_admin.otp_codes where created_at < now() - interval '1 day'`);
   return token;
 }
 
@@ -79,13 +79,13 @@ function cookieToken(req) {
 export async function sessionEmail(req) {
   const token = cookieToken(req);
   if (!token) return null;
-  const [row] = await query(`select email from sessions where token_hash = $1 and expires_at > now()`, [hash(token)]);
+  const [row] = await query(`select email from agape_admin.sessions where token_hash = $1 and expires_at > now()`, [hash(token)]);
   return row && allowed(row.email) ? row.email : null;
 }
 
 export async function endSession(req) {
   const token = cookieToken(req);
-  if (token) await query(`delete from sessions where token_hash = $1`, [hash(token)]);
+  if (token) await query(`delete from agape_admin.sessions where token_hash = $1`, [hash(token)]);
 }
 
 const secure = () => (process.env.NODE_ENV === 'development' ? '' : '; Secure');

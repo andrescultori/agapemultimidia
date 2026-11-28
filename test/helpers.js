@@ -4,6 +4,7 @@ import { setDb } from '../api/_lib/db.js';
 import { setMailer } from '../api/_lib/mail.js';
 
 process.env.SESSION_SECRET = 'x'.repeat(40);
+process.env.SUPABASE_URL = 'https://abc.supabase.co';
 process.env.ADMIN_EMAILS = 'fabio@example.com, Andre@Example.com';
 
 export async function freshDb() {

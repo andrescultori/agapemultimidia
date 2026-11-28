@@ -2,13 +2,9 @@ import { createHash } from 'node:crypto';
 import { query } from '../_lib/db.js';
 import { send, jsonBody, rawBody, sameOrigin, clientIp } from '../_lib/http.js';
 import { PAGES, isPage, validate, diff } from '../_lib/settings.js';
+import { putImage } from '../_lib/storage.js';
 import { requestOtp, verifyOtp, sessionEmail, endSession, sessionCookie, clearCookie } from '../_lib/auth.js';
 
-let blobPut = null;
-/** Tests inject a fake Blob uploader here. */
-export function setBlob(fn) {
-  blobPut = fn;
-}
 
 const IMAGE_LIMIT = 4 * 1024 * 1024;
 
@@ -22,9 +18,9 @@ function imageType(b) {
 const row = (r) => (r ? { id: Number(r.id), data: r.data, createdBy: r.created_by, createdAt: r.created_at } : null);
 
 async function state(page) {
-  const [pub] = await query(`select * from settings_versions where page = $1 and status = 'published' order by id desc limit 1`, [page]);
-  const [draft] = await query(`select * from settings_versions where page = $1 and status = 'draft'`, [page]);
-  const history = await query(`select id, created_by, created_at, note from settings_versions where page = $1 and status = 'published' order by id desc limit 15`, [page]);
+  const [pub] = await query(`select * from agape_admin.settings_versions where page = $1 and status = 'published' order by id desc limit 1`, [page]);
+  const [draft] = await query(`select * from agape_admin.settings_versions where page = $1 and status = 'draft'`, [page]);
+  const history = await query(`select id, created_by, created_at, note from agape_admin.settings_versions where page = $1 and status = 'published' order by id desc limit 15`, [page]);
   return {
     page,
     pages: Object.fromEntries(Object.entries(PAGES).map(([k, v]) => [k, v.label])),
@@ -77,10 +73,9 @@ export default async function handler(req, res) {
       if (!buf) return send(res, 413, { error: 'too_large', message: 'A imagem deve ter até 4 MB.' }, noStore);
       const type = imageType(buf);
       if (!type) return send(res, 415, { error: 'bad_type', message: 'Use uma imagem JPG, PNG ou WebP.' }, noStore);
-      const put = blobPut || (await import('@vercel/blob')).put;
       const name = `hero/${createHash('sha256').update(buf).digest('hex').slice(0, 12)}.${type[1]}`;
-      const blob = await put(name, buf, { access: 'public', contentType: type[0], addRandomSuffix: false, allowOverwrite: true });
-      return send(res, 200, { url: blob.url }, noStore);
+      const url = await putImage(name, buf, type[0]);
+      return send(res, 200, { url }, noStore);
     }
 
     const body = jsonBody(req) || {};
@@ -90,33 +85,33 @@ export default async function handler(req, res) {
     if (action === 'draft' && req.method === 'PUT') {
       const v = validate(page, body.data);
       if (!v.ok) return send(res, 422, { error: 'invalid', errors: v.errors }, noStore);
-      await query(`delete from settings_versions where page = $1 and status = 'draft'`, [page]);
-      await query(`insert into settings_versions (page, status, data, created_by) values ($1, 'draft', $2::jsonb, $3)`, [page, JSON.stringify(v.data), email]);
+      await query(`delete from agape_admin.settings_versions where page = $1 and status = 'draft'`, [page]);
+      await query(`insert into agape_admin.settings_versions (page, status, data, created_by) values ($1, 'draft', $2::text::jsonb, $3)`, [page, JSON.stringify(v.data), email]);
       return send(res, 200, { ok: true, ...(await state(page)) }, noStore);
     }
 
     if (action === 'publish' && req.method === 'POST') {
-      const [draft] = await query(`select * from settings_versions where page = $1 and status = 'draft'`, [page]);
+      const [draft] = await query(`select * from agape_admin.settings_versions where page = $1 and status = 'draft'`, [page]);
       if (!draft) return send(res, 409, { error: 'no_draft', message: 'Salve um rascunho antes de publicar.' }, noStore);
       const v = validate(page, draft.data);
       if (!v.ok) return send(res, 422, { error: 'invalid', errors: v.errors }, noStore);
-      const [pub] = await query(`select data from settings_versions where page = $1 and status = 'published' order by id desc limit 1`, [page]);
+      const [pub] = await query(`select data from agape_admin.settings_versions where page = $1 and status = 'published' order by id desc limit 1`, [page]);
       const changes = diff(pub ? pub.data : PAGES[page].defaults, v.data);
-      await query(`insert into settings_versions (page, status, data, created_by, note) values ($1, 'published', $2::jsonb, $3, $4)`, [
+      await query(`insert into agape_admin.settings_versions (page, status, data, created_by, note) values ($1, 'published', $2::text::jsonb, $3, $4)`, [
         page, JSON.stringify(v.data), email, changes.map((c) => c.field).join(', ').slice(0, 300) || 'sem alterações',
       ]);
-      await query(`delete from settings_versions where page = $1 and status = 'draft'`, [page]);
+      await query(`delete from agape_admin.settings_versions where page = $1 and status = 'draft'`, [page]);
       return send(res, 200, { ok: true, changes, ...(await state(page)) }, noStore);
     }
 
     if (action === 'restore' && req.method === 'POST') {
       // Copies an old published version into the draft; the admin still previews and publishes it.
-      const [old] = await query(`select data from settings_versions where id = $1 and page = $2 and status = 'published'`, [Number(body.versionId), page]);
+      const [old] = await query(`select data from agape_admin.settings_versions where id = $1 and page = $2 and status = 'published'`, [Number(body.versionId), page]);
       if (!old) return send(res, 404, { error: 'not_found' }, noStore);
       const v = validate(page, old.data);
       if (!v.ok) return send(res, 422, { error: 'invalid', errors: v.errors }, noStore);
-      await query(`delete from settings_versions where page = $1 and status = 'draft'`, [page]);
-      await query(`insert into settings_versions (page, status, data, created_by, note) values ($1, 'draft', $2::jsonb, $3, $4)`, [page, JSON.stringify(v.data), email, `restaurado da versão ${Number(body.versionId)}`]);
+      await query(`delete from agape_admin.settings_versions where page = $1 and status = 'draft'`, [page]);
+      await query(`insert into agape_admin.settings_versions (page, status, data, created_by, note) values ($1, 'draft', $2::text::jsonb, $3, $4)`, [page, JSON.stringify(v.data), email, `restaurado da versão ${Number(body.versionId)}`]);
       return send(res, 200, { ok: true, ...(await state(page)) }, noStore);
     }
 

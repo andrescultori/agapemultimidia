@@ -1,0 +1,6 @@
+# Cloudflare (not used while the site is on Vercel). Static files are copied to dist/ by `npm run build:cf`;
+# functions/ is picked up from the repo root. Secrets (never in this file): see .env.example.
+name = "agapemultimidia"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-11-01"
+compatibility_flags = ["nodejs_compat"]
