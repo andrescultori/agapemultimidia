@@ -9,11 +9,13 @@
   "scripts": {
     "test": "node --test \"test/*.test.js\"",
     "dev": "node scripts/dev-server.mjs",
-    "build:cf": "node scripts/build-cf.mjs"
+    "build:cf": "node scripts/build-cf.mjs",
+    "test:worker": "node scripts/test-worker.mjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.6.1",
-    "@electric-sql/pglite-socket": "^0.3.1"
+    "@electric-sql/pglite-socket": "^0.3.1",
+    "wrangler": "^4.169.0"
   },
   "dependencies": {
     "postgres": "^4.1.1"

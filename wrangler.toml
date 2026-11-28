@@ -1,6 +1,14 @@
-# Cloudflare (not used while the site is on Vercel). Static files are copied to dist/ by `npm run build:cf`;
-# functions/ is picked up from the repo root. Secrets (never in this file): see .env.example.
+# Cloudflare Workers with static assets. Static files are generated into dist/ by `npm run build:cf`.
+# Secrets (never in this file) are set in the dashboard under Settings > Variables and Secrets: see .env.example.
 name = "agapemultimidia"
-pages_build_output_dir = "dist"
+main = "src/worker.js"
 compatibility_date = "2026-11-01"
 compatibility_flags = ["nodejs_compat"]
+# Keep the plain variables set in the dashboard; without this, every deploy removes them.
+keep_vars = true
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+# Only /api/* runs the Worker; everything else is served straight from the static assets.
+run_worker_first = ["/api/*"]

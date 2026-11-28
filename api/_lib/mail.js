@@ -10,7 +10,7 @@ export async function sendOtpEmail(to, code) {
   const key = process.env.RESEND_API_KEY;
   if (!key) throw new Error('RESEND_API_KEY is not set');
   const from = process.env.RESEND_FROM || 'Ágape Multimidia <no-reply@agapemultimidia.com.br>';
-  const res = await fetch('https://api.resend.com/emails', {
+  const res = await fetch(process.env.RESEND_API_URL || 'https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({

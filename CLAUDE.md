@@ -5,10 +5,10 @@ Website and landing pages for Ágape Multimidia (live-streaming courses and cons
 
 ## Stack
 - Frontend: static HTML + inline CSS + a little inline JS. No build step, no framework.
-- Admin (see ADMIN.md): Vercel Functions in `api/` (Cloudflare adapter in `functions/`), Supabase (schema `agape_admin` + bucket `site-images`), Resend. Stores only the two admin emails, login codes (hashed), sessions and settings versions. The public pages collect no visitor data.
+- Admin (see ADMIN.md): handlers in `api/`, run as a Cloudflare Worker (`src/worker.js`) or as Vercel Functions, Supabase (schema `agape_admin` + bucket `site-images`), Resend. Stores only the two admin emails, login codes (hashed), sessions and settings versions. The public pages collect no visitor data.
 - Checkout: Kiwify (external link `pay.kiwify.com.br`).
 - Video: YouTube embeds through `youtube-nocookie.com`.
-- Hosting: Vercel (the admin needs it). HostGator/WordPress may still serve other parts of the domain; the `hostgator/` redirect file is only for that case. TODO(André): confirm how the repo deploys to Vercel and where DNS is managed.
+- Hosting: moving from Vercel (`agapemultimidia.vercel.app`, current) to Cloudflare Workers with static assets (client's Cloudflare account). DNS stays at Registro.br nameservers → Cloudflare. HostGator/WordPress goes away at the cutover; the `hostgator/` redirect file is obsolete after that. See ADMIN.md for the cutover steps.
 - Domain: `agapemultimidia.com.br`, registered at Registro.br (client's).
 
 ## Commands
@@ -16,6 +16,7 @@ Website and landing pages for Ágape Multimidia (live-streaming courses and cons
 npm install
 npm run dev    # site + admin on http://127.0.0.1:8765/pro/ and /admin/ (in-memory DB, login code printed in the terminal)
 npm test       # backend tests (Node test runner + in-memory Postgres)
+npm run test:worker   # same flow inside the real Cloudflare Workers runtime
 ```
 Pages themselves are still plain static files; `python3 -m http.server 8765` serves them without the admin.
 
@@ -32,7 +33,7 @@ Pages themselves are still plain static files; `python3 -m http.server 8765` ser
 - No trackers (Meta Pixel, GA, GTM) without a decision from André: adding one triggers the LGPD items in SECURITY.md.
 - The main video autoplays muted; other videos never autoplay.
 - Changes go through PRs from a branch off `main`; give André the link. Merging does not deploy: André uploads `black/` to HostGator.
-- Never commit secrets. Admin secrets live only in Vercel environment variables (`.env.example` lists them).
+- Never commit secrets. Admin secrets live only in the host's environment variables (Cloudflare Secrets / Vercel) (`.env.example` lists them).
 - Prefer the lowest operating cost.
 
 ## Model and context
@@ -65,5 +66,5 @@ DESIGN.md · SECURITY.md · GUIDELINES.md · ADMIN.md
 
 ## Open TODOs
 - TODO(André): what `/black` shows after the offer ends on 30/11/2026 (waiting on Fábio).
-- TODO(André): Cloudflare migration plan and date.
+- TODO(André): Cloudflare cutover (Worker deploy, Registro.br nameservers, custom domain); steps in ADMIN.md.
 - TODO(André): where the Remotion lesson-cover project (`remotion-capas`) is versioned; it is not in this repo.

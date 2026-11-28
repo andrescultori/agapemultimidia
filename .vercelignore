@@ -9,3 +9,6 @@ scripts
 hostgator
 functions
 wrangler.toml
+src
+scripts
+dist
